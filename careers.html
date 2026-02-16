@@ -1,4 +1,58 @@
 <!DOCTYPE html>
+<!--
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                                                                  ║
+    ║   Clever to inspect the page for clues. Think you're 1337?       ║
+    ║                                                                  ║
+    ║   We admire people who think outside the box. The fact that      ║
+    ║   you're reading source tells us you might be our kind of        ║
+    ║   person. Here's a nudge in the right direction.                 ║
+    ║                                                                  ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║                                                                  ║
+    ║   ▸ EASY CHALLENGE                                               ║
+    ║                                                                  ║
+    ║     The command uses `tr` to perform character substitution.      ║
+    ║     Study the two character sets passed to `tr`:                  ║
+    ║       - The first set defines the input characters.              ║
+    ║       - The second set defines what they map to.                 ║
+    ║     Each character in the encoded string is swapped according    ║
+    ║     to that mapping. You can work it out on paper, or just       ║
+    ║     run the command in any Linux/macOS terminal.                  ║
+    ║     Hint: the output is an email address.                        ║
+    ║                                                                  ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║                                                                  ║
+    ║   ▸ HARD CHALLENGE                                               ║
+    ║                                                                  ║
+    ║     Each of the 15 qubits represents one character.              ║
+    ║                                                                  ║
+    ║     Step 1: Look at the α coefficient for each qubit.            ║
+    ║             α is the real-valued amplitude of |0⟩.               ║
+    ║                                                                  ║
+    ║     Step 2: Recover the polar angle θ from α.                    ║
+    ║             Recall that for a qubit on the Bloch sphere,         ║
+    ║             α = cos(θ/2). So θ = 2 · arccos(α).                 ║
+    ║                                                                  ║
+    ║     Step 3: θ maps linearly to 7-bit ASCII space.                ║
+    ║             The full range [0, π] maps to [0, 128].              ║
+    ║             So: ASCII value = round(θ × 128 / π).                ║
+    ║                                                                  ║
+    ║     Step 4: Convert each ASCII value to its character.           ║
+    ║             Concatenate all 15 characters in order.              ║
+    ║             The result is an email address.                      ║
+    ║                                                                  ║
+    ║     That's it. No phase decoding needed — φ is a red herring.    ║
+    ║     The answer lives entirely in θ.                              ║
+    ║                                                                  ║
+    ╠══════════════════════════════════════════════════════════════════╣
+    ║                                                                  ║
+    ║   Still stuck? We respect persistence.                           ║
+    ║   Send what you've tried so far to careers@esrpo.com.            ║
+    ║   Showing your work matters more than the answer.                ║
+    ║                                                                  ║
+    ╚══════════════════════════════════════════════════════════════════╝
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
