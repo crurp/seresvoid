@@ -1460,6 +1460,148 @@ body {
     }
 }
 
+/* Careers Page */
+.careers-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 2rem 4rem;
+    z-index: 1;
+}
+
+.careers-content {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    z-index: 2;
+}
+
+.careers-badge {
+    display: inline-block;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s ease;
+}
+
+.careers-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInUp 0.8s ease 0.2s both;
+}
+
+.careers-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-tertiary);
+    margin-bottom: 3.5rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    animation: fadeInUp 0.8s ease 0.4s both;
+}
+
+.terminal-block {
+    background: #0d1117;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: left;
+    max-width: 680px;
+    margin: 0 auto 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(99, 102, 241, 0.06);
+    animation: fadeInUp 0.8s ease 0.6s both;
+}
+
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terminal-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-red { background: #ff5f57; }
+.dot-yellow { background: #febc2e; }
+.dot-green { background: #28c840; }
+
+.terminal-title {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-left: auto;
+}
+
+.terminal-body {
+    padding: 1.5rem;
+}
+
+.terminal-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.terminal-prompt {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.95rem;
+    color: #28c840;
+    font-weight: 600;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.terminal-command {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: #e6edf3;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+.careers-hint {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: fadeInUp 0.8s ease 0.8s both;
+    opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+    .careers-hero {
+        padding: 6rem 1.5rem 3rem;
+    }
+
+    .terminal-body {
+        padding: 1rem;
+    }
+
+    .terminal-command {
+        font-size: 0.78rem;
+    }
+}
+
 /* Live Chat Widget */
 .chat-widget {
     position: fixed;
