@@ -44,7 +44,7 @@
     ║                                                                  ║
     ║     That's it. No phase decoding needed — φ is a red herring.    ║
     ║     The answer lives entirely in θ.                              ║
-    ║                                                                  ║
+    ║         Hint: Round up                                           ║
     ╠══════════════════════════════════════════════════════════════════╣
     ║                                                                  ║
     ║   Still stuck? We respect persistence.                           ║
@@ -62,14 +62,6 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BP724NMT95"></script>
@@ -225,14 +217,17 @@
 
     <script src="script.js"></script>
 
-    <!-- Bloch Sphere Three.js Module -->
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    <!-- Three.js CDN (global build) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Quantum State Data + Bloch Sphere -->
+    <script>
+    (function() {
+        'use strict';
 
         // Precomputed quantum state angles [θ, φ] for 15 qubits
-        // θ encodes each character; φ scatters points across the sphere
-        const Q = [
+        var Q = [
             [2.478913, 2.061670],
             [2.847068, 4.172428],
             [2.552544, 1.227185],
@@ -251,191 +246,219 @@
         ];
 
         // Compute full state data from angles
-        const states = Q.map(([theta, phi], i) => {
-            const alpha = Math.cos(theta / 2);
-            const sinHalf = Math.sin(theta / 2);
-            const beta_r = sinHalf * Math.cos(phi);
-            const beta_i = sinHalf * Math.sin(phi);
-            const bx = Math.sin(theta) * Math.cos(phi);
-            const by = Math.sin(theta) * Math.sin(phi);
-            const bz = Math.cos(theta);
-            return { index: i, theta, phi, alpha, beta_r, beta_i, bx, by, bz };
+        var states = Q.map(function(pair, i) {
+            var theta = pair[0], phi = pair[1];
+            var alpha = Math.cos(theta / 2);
+            var sinHalf = Math.sin(theta / 2);
+            var beta_r = sinHalf * Math.cos(phi);
+            var beta_i = sinHalf * Math.sin(phi);
+            var bx = Math.sin(theta) * Math.cos(phi);
+            var by = Math.sin(theta) * Math.sin(phi);
+            var bz = Math.cos(theta);
+            return { index: i, theta: theta, phi: phi, alpha: alpha, beta_r: beta_r, beta_i: beta_i, bx: bx, by: by, bz: bz };
         });
 
         // Populate the state table
-        const tbody = document.getElementById('quantumTableBody');
+        var tbody = document.getElementById('quantumTableBody');
         if (tbody) {
-            states.forEach(s => {
-                const tr = document.createElement('tr');
-                const sign = s.beta_i >= 0 ? '+' : '';
-                tr.innerHTML = `
-                    <td><span class="qubit-label">|&#968;<sub>${s.index}</sub>&#10217;</span></td>
-                    <td><code>${s.alpha >= 0 ? '+' : ''}${s.alpha.toFixed(6)}</code></td>
-                    <td><code>${s.beta_r >= 0 ? '+' : ''}${s.beta_r.toFixed(6)} ${sign}${s.beta_i.toFixed(6)}i</code></td>
-                `;
+            states.forEach(function(s) {
+                var tr = document.createElement('tr');
+                var sign = s.beta_i >= 0 ? '+' : '';
+                tr.innerHTML =
+                    '<td><span class="qubit-label">|&#968;<sub>' + s.index + '</sub>&#10217;</span></td>' +
+                    '<td><code>' + (s.alpha >= 0 ? '+' : '') + s.alpha.toFixed(6) + '</code></td>' +
+                    '<td><code>' + (s.beta_r >= 0 ? '+' : '') + s.beta_r.toFixed(6) + ' ' + sign + s.beta_i.toFixed(6) + 'i</code></td>';
                 tbody.appendChild(tr);
             });
         }
 
         // ---- Bloch Sphere Visualization ----
-        const container = document.getElementById('blochSphere');
-        if (!container) throw new Error('Bloch sphere container not found');
+        function initBlochSphere() {
+            if (typeof THREE === 'undefined') {
+                console.warn('Three.js not loaded, retrying...');
+                setTimeout(initBlochSphere, 500);
+                return;
+            }
 
-        // Remove loading text
-        container.innerHTML = '';
+            var container = document.getElementById('blochSphere');
+            if (!container) return;
 
-        const width = container.clientWidth;
-        const height = container.clientHeight;
+            // Clear loading text
+            container.innerHTML = '';
 
-        // Scene
-        const scene = new THREE.Scene();
+            // Get dimensions (with fallback)
+            var width = container.clientWidth || container.offsetWidth || 600;
+            var height = container.clientHeight || container.offsetHeight || 450;
 
-        // Camera
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-        camera.position.set(2.2, 1.6, 2.2);
-        camera.lookAt(0, 0, 0);
+            // Scene
+            var scene = new THREE.Scene();
 
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setClearColor(0x000000, 0);
-        container.appendChild(renderer.domElement);
+            // Camera
+            var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+            camera.position.set(2.2, 1.6, 2.2);
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.08;
-        controls.enablePan = false;
-        controls.minDistance = 2;
-        controls.maxDistance = 6;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
+            // Renderer
+            var renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            } catch(e) {
+                container.innerHTML = '<div class="bloch-loading" style="opacity:1">WebGL not available in this browser.</div>';
+                return;
+            }
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x0a0a0f, 1);
+            container.appendChild(renderer.domElement);
 
-        // Wireframe sphere
-        const sphereGeo = new THREE.SphereGeometry(1, 48, 48);
-        const sphereMat = new THREE.MeshBasicMaterial({
-            color: 0x6366f1,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.08
-        });
-        scene.add(new THREE.Mesh(sphereGeo, sphereMat));
+            // Controls
+            var controls;
+            if (THREE.OrbitControls) {
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.08;
+                controls.enablePan = false;
+                controls.minDistance = 2;
+                controls.maxDistance = 6;
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.5;
+            }
 
-        // Equator ring
-        const ringGeo = new THREE.RingGeometry(0.99, 1.01, 64);
-        const ringMat = new THREE.MeshBasicMaterial({
-            color: 0x6366f1,
-            transparent: true,
-            opacity: 0.2,
-            side: THREE.DoubleSide
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = Math.PI / 2;
-        scene.add(ring);
-
-        // Axes
-        function makeAxis(from, to, color) {
-            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.4 });
-            const geo = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(...from),
-                new THREE.Vector3(...to)
-            ]);
-            scene.add(new THREE.Line(geo, mat));
-        }
-        makeAxis([0, -1.3, 0], [0, 1.3, 0], 0xffffff);   // Z axis (|0⟩ to |1⟩)
-        makeAxis([-1.3, 0, 0], [1.3, 0, 0], 0x6366f1);    // X axis
-        makeAxis([0, 0, -1.3], [0, 0, 1.3], 0x8b5cf6);    // Y axis
-
-        // Axis label sprites
-        function makeLabel(text, position, color = '#a1a1aa', size = 0.12) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 128;
-            canvas.height = 64;
-            ctx.font = 'bold 36px Space Grotesk, Inter, sans-serif';
-            ctx.fillStyle = color;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, 64, 32);
-
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.minFilter = THREE.LinearFilter;
-            const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            const sprite = new THREE.Sprite(mat);
-            sprite.position.set(...position);
-            sprite.scale.set(size * 4, size * 2, 1);
-            scene.add(sprite);
-        }
-
-        makeLabel('|0⟩', [0, 1.45, 0], '#ffffff', 0.14);
-        makeLabel('|1⟩', [0, -1.45, 0], '#ffffff', 0.14);
-        makeLabel('+X', [1.45, 0, 0], '#6366f1', 0.10);
-        makeLabel('+Y', [0, 0, 1.45], '#8b5cf6', 0.10);
-
-        // Pole markers
-        const poleGeo = new THREE.SphereGeometry(0.03, 16, 16);
-        const poleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const pole0 = new THREE.Mesh(poleGeo, poleMat);
-        pole0.position.set(0, 1, 0);
-        scene.add(pole0);
-        const pole1 = new THREE.Mesh(poleGeo, poleMat.clone());
-        pole1.position.set(0, -1, 0);
-        scene.add(pole1);
-
-        // State points on the Bloch sphere
-        // Mapping: Bloch X → Three.js X, Bloch Y → Three.js Z, Bloch Z → Three.js Y
-        const pointGeo = new THREE.SphereGeometry(0.035, 16, 16);
-        const colors = [
-            0xf472b6, 0xa78bfa, 0x818cf8, 0x6ee7b7, 0xfbbf24,
-            0xf87171, 0xf472b6, 0x67e8f9, 0x34d399, 0xfcd34d,
-            0xc084fc, 0xfb923c, 0x60a5fa, 0xc084fc, 0xe879f9
-        ];
-
-        states.forEach((s, i) => {
-            const mat = new THREE.MeshBasicMaterial({ color: colors[i % colors.length] });
-            const point = new THREE.Mesh(pointGeo, mat);
-            // Map Bloch → Three.js: (bx, bz, by) since Three.js Y is up
-            point.position.set(s.bx, s.bz, s.by);
-            scene.add(point);
-
-            // Line from center to point
-            const lineGeo = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(s.bx, s.bz, s.by)
-            ]);
-            const lineMat = new THREE.LineBasicMaterial({
-                color: colors[i % colors.length],
+            // Wireframe sphere
+            var sphereGeo = new THREE.SphereGeometry(1, 48, 48);
+            var sphereMat = new THREE.MeshBasicMaterial({
+                color: 0x6366f1,
+                wireframe: true,
                 transparent: true,
-                opacity: 0.25
+                opacity: 0.08
             });
-            scene.add(new THREE.Line(lineGeo, lineMat));
+            scene.add(new THREE.Mesh(sphereGeo, sphereMat));
 
-            // Index label
-            makeLabel(String(i), [s.bx * 1.15, s.bz * 1.15, s.by * 1.15], '#e2e8f0', 0.07);
-        });
+            // Equator ring
+            var ringGeo = new THREE.RingGeometry(0.99, 1.01, 64);
+            var ringMat = new THREE.MeshBasicMaterial({
+                color: 0x6366f1,
+                transparent: true,
+                opacity: 0.2,
+                side: THREE.DoubleSide
+            });
+            var ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            scene.add(ring);
 
-        // Ambient light (for visibility even though we use BasicMaterial)
-        scene.add(new THREE.AmbientLight(0xffffff, 1));
+            // Axes helper
+            function makeAxis(from, to, color) {
+                var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.4 });
+                var points = [
+                    new THREE.Vector3(from[0], from[1], from[2]),
+                    new THREE.Vector3(to[0], to[1], to[2])
+                ];
+                var geo = new THREE.BufferGeometry().setFromPoints(points);
+                scene.add(new THREE.Line(geo, mat));
+            }
+            makeAxis([0, -1.3, 0], [0, 1.3, 0], 0xffffff);
+            makeAxis([-1.3, 0, 0], [1.3, 0, 0], 0x6366f1);
+            makeAxis([0, 0, -1.3], [0, 0, 1.3], 0x8b5cf6);
 
-        // Animation
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+            // Label sprites
+            function makeLabel(text, pos, color, size) {
+                color = color || '#a1a1aa';
+                size = size || 0.12;
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                canvas.width = 128;
+                canvas.height = 64;
+                ctx.font = 'bold 36px sans-serif';
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 64, 32);
+
+                var texture = new THREE.CanvasTexture(canvas);
+                texture.minFilter = THREE.LinearFilter;
+                var mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                var sprite = new THREE.Sprite(mat);
+                sprite.position.set(pos[0], pos[1], pos[2]);
+                sprite.scale.set(size * 4, size * 2, 1);
+                scene.add(sprite);
+            }
+
+            makeLabel('|0>', [0, 1.45, 0], '#ffffff', 0.14);
+            makeLabel('|1>', [0, -1.45, 0], '#ffffff', 0.14);
+            makeLabel('+X', [1.45, 0, 0], '#6366f1', 0.10);
+            makeLabel('+Y', [0, 0, 1.45], '#8b5cf6', 0.10);
+
+            // Pole markers
+            var poleGeo = new THREE.SphereGeometry(0.03, 16, 16);
+            var poleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            var pole0 = new THREE.Mesh(poleGeo, poleMat);
+            pole0.position.set(0, 1, 0);
+            scene.add(pole0);
+            var pole1 = new THREE.Mesh(poleGeo, poleMat.clone());
+            pole1.position.set(0, -1, 0);
+            scene.add(pole1);
+
+            // State points
+            var pointGeo = new THREE.SphereGeometry(0.04, 16, 16);
+            var dotColors = [
+                0xf472b6, 0xa78bfa, 0x818cf8, 0x6ee7b7, 0xfbbf24,
+                0xf87171, 0xf472b6, 0x67e8f9, 0x34d399, 0xfcd34d,
+                0xc084fc, 0xfb923c, 0x60a5fa, 0xc084fc, 0xe879f9
+            ];
+
+            states.forEach(function(s, i) {
+                var mat = new THREE.MeshBasicMaterial({ color: dotColors[i % dotColors.length] });
+                var point = new THREE.Mesh(pointGeo, mat);
+                point.position.set(s.bx, s.bz, s.by);
+                scene.add(point);
+
+                // Line from center to point
+                var linePoints = [
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(s.bx, s.bz, s.by)
+                ];
+                var lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+                var lineMat = new THREE.LineBasicMaterial({
+                    color: dotColors[i % dotColors.length],
+                    transparent: true,
+                    opacity: 0.3
+                });
+                scene.add(new THREE.Line(lineGeo, lineMat));
+
+                // Index label
+                makeLabel(String(i), [s.bx * 1.15, s.bz * 1.15, s.by * 1.15], '#e2e8f0', 0.07);
+            });
+
+            // Light
+            scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                if (controls) controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Responsive resize
+            window.addEventListener('resize', function() {
+                var w = container.clientWidth || 600;
+                var h = container.clientHeight || 450;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            });
         }
-        animate();
 
-        // Responsive resize
-        const resizeObserver = new ResizeObserver(() => {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-        });
-        resizeObserver.observe(container);
-
+        // Initialize after DOM is ready and layout is computed
+        if (document.readyState === 'complete') {
+            setTimeout(initBlochSphere, 100);
+        } else {
+            window.addEventListener('load', function() {
+                setTimeout(initBlochSphere, 100);
+            });
+        }
+    })();
     </script>
 </body>
 </html>
