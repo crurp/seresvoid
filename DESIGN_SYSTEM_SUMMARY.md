@@ -53,6 +53,11 @@ All icons are SVG format (vector, scalable to any size):
 - **Background:** Deep dark theme (#0a0a0f)
 - **Text:** White to Zinc gray scale
 
+### Product Category Colors
+- **Quantum:** Indigo (#6366f1)
+- **AI / ML:** Cyan (#06b6d4)
+- **Cybersecurity:** Pink (#ec4899)
+
 ### Typography
 - **Body Font:** Inter (Google Fonts)
 - **Display Font:** Space Grotesk (Google Fonts)
@@ -60,10 +65,14 @@ All icons are SVG format (vector, scalable to any size):
 
 ### Components
 - Buttons (Primary, Secondary)
-- Cards (Domain, Service, Contact)
+- Cards (Domain, Service, Contact, Product)
 - Navigation (Header, Mobile Menu)
 - Hero Section
 - Sections & Layouts
+- Product filter tabs
+- Product status badges (Development, Beta, Coming Soon)
+- Interactive constellation graph (Canvas 2D)
+- RPO principles strip
 
 ### Animations
 - Fade in up
@@ -101,6 +110,15 @@ All icons are SVG format (vector, scalable to any size):
 
 ```
 echospark/
+├── index.html                # Main landing page
+├── about.html                # Company background & RPO overview
+├── products.html             # Product catalog & constellation graph
+├── careers.html              # Careers challenges page
+├── quantum.html              # Quantum domain page
+├── ai-ml.html                # AI/ML domain page
+├── cybersecurity.html         # Cybersecurity domain page
+├── styles.css                # Global stylesheet
+├── script.js                 # Shared JavaScript
 ├── DESIGN_SYSTEM.md          # Complete design system
 ├── QUICK_REFERENCE.md         # Quick lookup guide
 ├── DESIGN_SYSTEM_SUMMARY.md  # This file
@@ -115,12 +133,13 @@ echospark/
     ├── logo-512.svg
     ├── logo-master.svg
     ├── favicon.svg
-    └── README.md
+    ├── README.md
+    └── png/                  # PNG exports at all sizes
 ```
 
 ## Version Information
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Created:** January 2025
 - **Status:** Active
 - **Last Updated:** February 2026

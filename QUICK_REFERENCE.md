@@ -11,6 +11,13 @@ Quick lookup guide for common design decisions.
 --accent: #ec4899;         /* Pink 500 */
 ```
 
+### Product Categories
+```css
+--category-quantum:       #6366f1;  /* Indigo */
+--category-ai-ml:         #06b6d4;  /* Cyan */
+--category-cybersecurity: #ec4899;  /* Pink */
+```
+
 ### Backgrounds
 ```css
 --bg-primary: #0a0a0f;     /* Deep dark */
@@ -82,6 +89,20 @@ padding: 0 2rem;
 - **Header:** 40px
 - **Cards:** 48px
 - **Large:** 128px, 256px, 512px
+
+## Product Card
+```css
+background: var(--bg-secondary);
+border: 1px solid var(--border);
+border-radius: 20px;
+padding: 2rem;
+/* Top accent: 3px gradient bar using category color */
+```
+
+## Product Statuses
+- `development` → purple badge (`.status-dev`)
+- `beta` → yellow badge (`.status-beta`)
+- `coming-soon` → gray badge (`.status-coming`)
 
 ## Animations
 

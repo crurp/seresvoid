@@ -1,7 +1,7 @@
 # EchoSpark Design System
 
-**Version:** 1.0.0  
-**Last Updated:** January 2025  
+**Version:** 1.2.0  
+**Last Updated:** February 2026  
 **Status:** Active
 
 ---
@@ -106,11 +106,22 @@ linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)
 - Orb 2: Radial gradient from `#8b5cf6` (secondary)
 - Orb 3: Radial gradient from `#ec4899` (accent)
 
+### Product Category Colors
+
+Used on the Products page to differentiate domain categories in the constellation graph, product cards, and filter tabs.
+
+```css
+--category-quantum:       #6366f1;  /* Indigo — matches primary */
+--category-ai-ml:         #06b6d4;  /* Cyan 500 */
+--category-cybersecurity: #ec4899;  /* Pink — matches accent */
+```
+
 ### Color Usage Guidelines
 
 - **Primary:** Main actions, links, highlights
 - **Secondary:** Supporting elements, accents
 - **Accent:** Special emphasis, hover states
+- **Category Colors:** Product domain differentiation (Quantum = Indigo, AI/ML = Cyan, Cybersecurity = Pink)
 - **Background:** Always use dark theme (no light mode)
 - **Text:** Ensure WCAG AA contrast (4.5:1 minimum)
 
@@ -381,6 +392,97 @@ gap: 1.5rem;
 - Description: section-description style
 ```
 
+### Products Page Components
+
+**Product Card:**
+```css
+- Background: bg-secondary
+- Border: border (1px solid)
+- Border Radius: 20px
+- Padding: 2rem
+- Top accent bar: 3px linear-gradient using category color
+- Hover: translateY(-8px), border-color from category color, glow shadow
+- Transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1)
+```
+
+**Product Card Elements:**
+- **Icon:** 48px container, category-colored, glass background
+- **Category label:** 0.75rem, uppercase, category-colored
+- **Status badge:** 0.7rem, semi-transparent background with matching border
+- **Product name:** Space Grotesk, 1.3rem, weight 700
+- **Tagline:** 0.95rem, primary-light color
+- **Description:** 0.9rem, text-secondary, line-height 1.7
+- **CTA link:** category-colored with arrow, hover translateX(4px)
+
+**Filter Tabs:**
+```css
+- Display: flex, gap 0.5rem, center, wrap
+- Background: glass effect
+- Border: glass-border (1px solid)
+- Border Radius: 10px
+- Padding: 0.6rem 1.3rem
+- Font: Inter, 500, 0.85rem
+- Active: primary gradient background, white text
+- Hover: background opacity increase
+```
+
+**Product Status Badges:**
+```css
+.status-dev {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.status-beta {
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+.status-coming {
+    background: rgba(161, 161, 170, 0.1);
+    color: #a1a1aa;
+    border: 1px solid rgba(161, 161, 170, 0.2);
+}
+```
+
+**Constellation Graph (Canvas 2D):**
+- Interactive network visualization connecting all products
+- Node colors driven by `CATEGORY_COLORS` map
+- Node glow: radial gradient from category color
+- Connection lines: `rgba(99, 102, 241, alpha)` based on distance (max 300px)
+- Mouse proximity lines: `rgba(139, 92, 246, alpha)` (max 200px)
+- Spring physics: nodes drift and return to base position
+- Mouse repulsion: nodes push away within 120px radius
+- Labels: Space Grotesk, 11px, `rgba(255,255,255,0.6)`
+- Canvas height: 320px, responsive width via ResizeObserver
+
+**RPO Principles Strip:**
+```css
+- Display: grid, 3 columns (auto-fit, minmax 280px)
+- Gap: 1.5rem
+- Chip: glass background, glass-border, border-radius 16px, padding 1.5rem
+- Icon: 24px, primary-light color
+- Title: Inter, 600, 0.95rem
+- Description: 0.85rem, text-secondary
+- Hover: background opacity increase, translateY(-2px), border-color primary
+```
+
+**Data-Driven Architecture:**
+
+Products are defined in a JavaScript `PRODUCTS` array for easy addition of new products:
+```javascript
+// Required fields per product:
+{
+    id:          'string',       // unique identifier
+    name:        'string',       // display name
+    tagline:     'string',       // short one-liner
+    description: 'string',       // 2-3 sentences
+    category:    'quantum' | 'ai-ml' | 'cybersecurity',
+    status:      'development' | 'beta' | 'coming-soon',
+    icon:        'SVG path'      // 24x24 viewBox
+}
+```
+
 ---
 
 ## Icons & Graphics
@@ -613,9 +715,15 @@ gap: 1.5rem;
 
 ```
 /
-├── index.html
-├── styles.css
-├── script.js
+├── index.html               # Main landing page
+├── about.html               # Company background & RPO overview
+├── products.html            # Product catalog & constellation graph
+├── careers.html             # Careers challenges page
+├── quantum.html             # Quantum domain page
+├── ai-ml.html               # AI/ML domain page
+├── cybersecurity.html        # Cybersecurity domain page
+├── styles.css               # Global stylesheet
+├── script.js                # Shared JavaScript (nav, chat, interactions)
 ├── icons/
 │   ├── logo-16.svg
 │   ├── logo-32.svg
@@ -624,8 +732,13 @@ gap: 1.5rem;
 │   ├── logo-64.svg
 │   ├── logo-128.svg
 │   ├── logo-256.svg
-│   └── logo-512.svg
-└── DESIGN_SYSTEM.md
+│   ├── logo-512.svg
+│   ├── logo-master.svg
+│   ├── favicon.svg
+│   └── png/                 # PNG exports at all sizes
+├── DESIGN_SYSTEM.md         # This file
+├── DESIGN_SYSTEM_SUMMARY.md # Summary overview
+└── QUICK_REFERENCE.md       # Quick lookup guide
 ```
 
 ### Performance
@@ -647,6 +760,19 @@ gap: 1.5rem;
 ---
 
 ## Version History
+
+**v1.2.0** (February 2026)
+- Added Products page components (cards, filters, constellation graph)
+- Added product category colors (Quantum = Indigo, AI/ML = Cyan, Cybersecurity = Pink)
+- Added data-driven product architecture documentation
+- Updated file structure with all site pages
+
+**v1.1.0** (February 2026)
+- Logo updated from central circle to compass rose cross
+- Added About, Careers, and Products pages
+- Added RPO subscript to logo text
+- Added contact card component
+- Updated navigation structure
 
 **v1.0.0** (January 2025)
 - Initial design system
