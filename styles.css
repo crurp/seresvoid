@@ -877,23 +877,55 @@ body {
 .service-image-wrapper {
     position: relative;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    border-radius: 24px;
+    max-width: 230px;
+    margin: 2rem auto;
+    border-radius: 16px;
     overflow: hidden;
-    aspect-ratio: 16/9;
     background: var(--bg-tertiary);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.service-image-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.service-image-wrapper:hover {
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+    transform: translateY(-5px);
+}
+
+.service-image-wrapper:hover::before {
+    opacity: 1;
 }
 
 .service-image {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(0.95) contrast(1.05);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 .service-image-wrapper:hover .service-image {
-    transform: scale(1.05);
+    transform: scale(1.02);
+    filter: brightness(1.05) contrast(1.05);
 }
 
 .service-image-overlay {
@@ -902,8 +934,15 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, transparent, rgba(10, 10, 15, 0.6));
+    background: linear-gradient(to bottom, transparent, rgba(10, 10, 15, 0.3));
     pointer-events: none;
+    transition: all 0.4s ease;
+    z-index: 2;
+}
+
+.service-image-wrapper:hover .service-image-overlay {
+    opacity: 0.6;
+    background: linear-gradient(to bottom, transparent 60%, rgba(99, 102, 241, 0.15) 100%);
 }
 
 .services-offered {
@@ -1062,7 +1101,8 @@ body {
     }
 
     .service-image-wrapper {
-        aspect-ratio: 4/3;
+        max-width: 100%;
+        margin-bottom: 2rem;
     }
 
     .services-grid {
