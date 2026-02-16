@@ -1602,6 +1602,170 @@ body {
     }
 }
 
+/* Careers Challenge Blocks */
+.challenge-block {
+    margin-bottom: 3.5rem;
+    position: relative;
+}
+
+.challenge-difficulty {
+    display: inline-block;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.25rem;
+}
+
+.challenge-easy {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.challenge-hard {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Quantum Challenge */
+.quantum-challenge {
+    text-align: left;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.quantum-description {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 12px;
+    border-left: 3px solid var(--primary);
+}
+
+/* Bloch Sphere */
+.bloch-wrapper {
+    margin-bottom: 2.5rem;
+}
+
+.bloch-container {
+    width: 100%;
+    height: 450px;
+    border-radius: 16px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: rgba(10, 10, 15, 0.6);
+    overflow: hidden;
+    position: relative;
+}
+
+.bloch-container canvas {
+    display: block;
+}
+
+.bloch-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.bloch-controls-hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+    margin-top: 0.75rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Quantum State Table */
+.quantum-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: rgba(10, 10, 15, 0.6);
+}
+
+.quantum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.82rem;
+}
+
+.quantum-table thead {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.quantum-table th {
+    padding: 0.9rem 1.25rem;
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+    white-space: nowrap;
+}
+
+.quantum-table td {
+    padding: 0.65rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.quantum-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.quantum-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.quantum-table code {
+    color: #e2e8f0;
+    font-family: inherit;
+}
+
+.qubit-label {
+    color: var(--primary-light);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .bloch-container {
+        height: 320px;
+    }
+
+    .quantum-description {
+        font-size: 0.8rem;
+        padding: 1rem;
+    }
+
+    .quantum-table {
+        font-size: 0.72rem;
+    }
+
+    .quantum-table th,
+    .quantum-table td {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
 /* Live Chat Widget */
 .chat-widget {
     position: fixed;

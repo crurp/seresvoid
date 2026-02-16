@@ -8,6 +8,14 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BP724NMT95"></script>
@@ -72,19 +80,60 @@
             <h1 class="careers-title">We only take the best.</h1>
             <p class="careers-subtitle">If you know, you know. If you don't, this isn't for you.</p>
 
-            <div class="terminal-block">
-                <div class="terminal-header">
-                    <div class="terminal-dots">
-                        <span class="terminal-dot dot-red"></span>
-                        <span class="terminal-dot dot-yellow"></span>
-                        <span class="terminal-dot dot-green"></span>
+            <!-- EASY CHALLENGE -->
+            <div class="challenge-block">
+                <div class="challenge-difficulty challenge-easy">Easy</div>
+                <div class="terminal-block">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot dot-red"></span>
+                            <span class="terminal-dot dot-yellow"></span>
+                            <span class="terminal-dot dot-green"></span>
+                        </div>
+                        <span class="terminal-title"></span>
                     </div>
-                    <span class="terminal-title"></span>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <code class="terminal-command">s='zxobbop!bpoml#zlj'; printf '%s\n' "$s" |tr 'X-ZA-Wx-za-w!#' 'A-Za-z@.'</code>
+                        </div>
+                    </div>
                 </div>
-                <div class="terminal-body">
-                    <div class="terminal-line">
-                        <span class="terminal-prompt">$</span>
-                        <code class="terminal-command">s="fduhhuv@hvusr.frp"; printf '%s\n' "$s" | tr 'A-Za-z' 'X-ZA-Wx-za-w'</code>
+            </div>
+
+            <!-- HARD CHALLENGE -->
+            <div class="challenge-block">
+                <div class="challenge-difficulty challenge-hard">Hard</div>
+                <div class="quantum-challenge">
+                    <p class="quantum-description">
+                        A 15-qubit quantum register encodes the answer. Each state 
+                        |&#968;<sub>k</sub>&#10217; = &#945;<sub>k</sub>|0&#10217; + &#946;<sub>k</sub>|1&#10217; 
+                        maps to exactly one character. The Bloch sphere's polar angle &#952; maps linearly 
+                        from the computational basis to a 7-bit character space. Decode the register.
+                    </p>
+
+                    <!-- Bloch Sphere Visualization -->
+                    <div class="bloch-wrapper">
+                        <div id="blochSphere" class="bloch-container">
+                            <div class="bloch-loading">Initializing quantum state space...</div>
+                        </div>
+                        <div class="bloch-controls-hint">Click and drag to rotate. Scroll to zoom.</div>
+                    </div>
+
+                    <!-- Quantum State Table -->
+                    <div class="quantum-table-wrapper">
+                        <table class="quantum-table">
+                            <thead>
+                                <tr>
+                                    <th>Qubit</th>
+                                    <th>&#945; &ensp;(|0&#10217; amplitude)</th>
+                                    <th>&#946; &ensp;(|1&#10217; amplitude)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quantumTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -121,5 +170,218 @@
     </footer>
 
     <script src="script.js"></script>
+
+    <!-- Bloch Sphere Three.js Module -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Precomputed quantum state angles [θ, φ] for 15 qubits
+        // θ encodes each character; φ scatters points across the sphere
+        const Q = [
+            [2.478913, 2.061670],
+            [2.847068, 4.172428],
+            [2.552544, 1.227185],
+            [2.380738, 1.079922],
+            [2.699806, 5.841399],
+            [1.570796, 3.976078],
+            [2.478913, 2.061670],
+            [2.822525, 2.356194],
+            [2.797982, 0.539961],
+            [2.748894, 3.190680],
+            [2.724351, 1.374447],
+            [1.129010, 2.699806],
+            [2.429826, 4.712389],
+            [2.724351, 1.374447],
+            [2.675262, 4.025166]
+        ];
+
+        // Compute full state data from angles
+        const states = Q.map(([theta, phi], i) => {
+            const alpha = Math.cos(theta / 2);
+            const sinHalf = Math.sin(theta / 2);
+            const beta_r = sinHalf * Math.cos(phi);
+            const beta_i = sinHalf * Math.sin(phi);
+            const bx = Math.sin(theta) * Math.cos(phi);
+            const by = Math.sin(theta) * Math.sin(phi);
+            const bz = Math.cos(theta);
+            return { index: i, theta, phi, alpha, beta_r, beta_i, bx, by, bz };
+        });
+
+        // Populate the state table
+        const tbody = document.getElementById('quantumTableBody');
+        if (tbody) {
+            states.forEach(s => {
+                const tr = document.createElement('tr');
+                const sign = s.beta_i >= 0 ? '+' : '';
+                tr.innerHTML = `
+                    <td><span class="qubit-label">|&#968;<sub>${s.index}</sub>&#10217;</span></td>
+                    <td><code>${s.alpha >= 0 ? '+' : ''}${s.alpha.toFixed(6)}</code></td>
+                    <td><code>${s.beta_r >= 0 ? '+' : ''}${s.beta_r.toFixed(6)} ${sign}${s.beta_i.toFixed(6)}i</code></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ---- Bloch Sphere Visualization ----
+        const container = document.getElementById('blochSphere');
+        if (!container) throw new Error('Bloch sphere container not found');
+
+        // Remove loading text
+        container.innerHTML = '';
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        // Scene
+        const scene = new THREE.Scene();
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+        camera.position.set(2.2, 1.6, 2.2);
+        camera.lookAt(0, 0, 0);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.enablePan = false;
+        controls.minDistance = 2;
+        controls.maxDistance = 6;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+
+        // Wireframe sphere
+        const sphereGeo = new THREE.SphereGeometry(1, 48, 48);
+        const sphereMat = new THREE.MeshBasicMaterial({
+            color: 0x6366f1,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.08
+        });
+        scene.add(new THREE.Mesh(sphereGeo, sphereMat));
+
+        // Equator ring
+        const ringGeo = new THREE.RingGeometry(0.99, 1.01, 64);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: 0x6366f1,
+            transparent: true,
+            opacity: 0.2,
+            side: THREE.DoubleSide
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        scene.add(ring);
+
+        // Axes
+        function makeAxis(from, to, color) {
+            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.4 });
+            const geo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(...from),
+                new THREE.Vector3(...to)
+            ]);
+            scene.add(new THREE.Line(geo, mat));
+        }
+        makeAxis([0, -1.3, 0], [0, 1.3, 0], 0xffffff);   // Z axis (|0⟩ to |1⟩)
+        makeAxis([-1.3, 0, 0], [1.3, 0, 0], 0x6366f1);    // X axis
+        makeAxis([0, 0, -1.3], [0, 0, 1.3], 0x8b5cf6);    // Y axis
+
+        // Axis label sprites
+        function makeLabel(text, position, color = '#a1a1aa', size = 0.12) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 128;
+            canvas.height = 64;
+            ctx.font = 'bold 36px Space Grotesk, Inter, sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 64, 32);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+            const sprite = new THREE.Sprite(mat);
+            sprite.position.set(...position);
+            sprite.scale.set(size * 4, size * 2, 1);
+            scene.add(sprite);
+        }
+
+        makeLabel('|0⟩', [0, 1.45, 0], '#ffffff', 0.14);
+        makeLabel('|1⟩', [0, -1.45, 0], '#ffffff', 0.14);
+        makeLabel('+X', [1.45, 0, 0], '#6366f1', 0.10);
+        makeLabel('+Y', [0, 0, 1.45], '#8b5cf6', 0.10);
+
+        // Pole markers
+        const poleGeo = new THREE.SphereGeometry(0.03, 16, 16);
+        const poleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const pole0 = new THREE.Mesh(poleGeo, poleMat);
+        pole0.position.set(0, 1, 0);
+        scene.add(pole0);
+        const pole1 = new THREE.Mesh(poleGeo, poleMat.clone());
+        pole1.position.set(0, -1, 0);
+        scene.add(pole1);
+
+        // State points on the Bloch sphere
+        // Mapping: Bloch X → Three.js X, Bloch Y → Three.js Z, Bloch Z → Three.js Y
+        const pointGeo = new THREE.SphereGeometry(0.035, 16, 16);
+        const colors = [
+            0xf472b6, 0xa78bfa, 0x818cf8, 0x6ee7b7, 0xfbbf24,
+            0xf87171, 0xf472b6, 0x67e8f9, 0x34d399, 0xfcd34d,
+            0xc084fc, 0xfb923c, 0x60a5fa, 0xc084fc, 0xe879f9
+        ];
+
+        states.forEach((s, i) => {
+            const mat = new THREE.MeshBasicMaterial({ color: colors[i % colors.length] });
+            const point = new THREE.Mesh(pointGeo, mat);
+            // Map Bloch → Three.js: (bx, bz, by) since Three.js Y is up
+            point.position.set(s.bx, s.bz, s.by);
+            scene.add(point);
+
+            // Line from center to point
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(s.bx, s.bz, s.by)
+            ]);
+            const lineMat = new THREE.LineBasicMaterial({
+                color: colors[i % colors.length],
+                transparent: true,
+                opacity: 0.25
+            });
+            scene.add(new THREE.Line(lineGeo, lineMat));
+
+            // Index label
+            makeLabel(String(i), [s.bx * 1.15, s.bz * 1.15, s.by * 1.15], '#e2e8f0', 0.07);
+        });
+
+        // Ambient light (for visibility even though we use BasicMaterial)
+        scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive resize
+        const resizeObserver = new ResizeObserver(() => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+        resizeObserver.observe(container);
+
+    </script>
 </body>
 </html>
