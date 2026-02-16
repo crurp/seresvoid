@@ -160,7 +160,7 @@
 
                     <!-- Bloch Sphere Visualization -->
                     <div class="bloch-wrapper">
-                        <div id="blochSphere" class="bloch-container">
+                        <div id="blochSphere" class="bloch-container" style="min-height:450px;display:block;">
                             <div class="bloch-loading">Initializing quantum state space...</div>
                         </div>
                         <div class="bloch-controls-hint">Click and drag to rotate. Scroll to zoom.</div>
@@ -217,9 +217,9 @@
 
     <script src="script.js"></script>
 
-    <!-- Three.js CDN (global build) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Three.js CDN (global build, r149 for non-module OrbitControls) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/controls/OrbitControls.js"></script>
 
     <!-- Quantum State Data + Bloch Sphere -->
     <script>
