@@ -145,7 +145,6 @@
                 <button class="filter-btn" data-filter="quantum">Quantum</button>
                 <button class="filter-btn" data-filter="ai-ml">AI / ML</button>
                 <button class="filter-btn" data-filter="cybersecurity">Cybersecurity</button>
-                <button class="filter-btn" data-filter="platform">Platform</button>
             </div>
 
             <!-- Product Grid (rendered by JS) -->
@@ -243,19 +242,19 @@
          - name:        product display name
          - tagline:     short one-liner
          - description: 2-3 sentence description
-         - category:    "quantum" | "ai-ml" | "cybersecurity" | "platform"
-         - status:      "active" | "beta" | "coming-soon"
+         - category:    "quantum" | "ai-ml" | "cybersecurity"
+         - status:      "development" | "beta" | "coming-soon"
          - icon:        SVG path string (24x24 viewBox)
        ================================================================ */
 
     const PRODUCTS = [
         {
-            id: 'rpo-core',
-            name: 'RPO Core',
+            id: 'echospark-core',
+            name: 'EchoSpark Core',
             tagline: 'Resilient Performance Operations Framework',
-            description: 'The foundational framework that powers every EchoSpark deployment. RPO Core provides real-time health monitoring, automated failover orchestration, and performance optimization across hybrid infrastructure.',
-            category: 'platform',
-            status: 'active',
+            description: 'The foundational framework that powers every EchoSpark deployment. EchoSpark Core provides real-time health monitoring, automated failover orchestration, and performance optimization across hybrid infrastructure.',
+            category: 'ai-ml',
+            status: 'development',
             icon: '<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'
         },
         {
@@ -264,7 +263,7 @@
             tagline: 'Post-Quantum Cryptography Migration Platform',
             description: 'Automated discovery, risk assessment, and migration tooling for transitioning enterprise cryptographic infrastructure to post-quantum algorithms. Supports NIST PQC standards with zero-downtime deployment.',
             category: 'quantum',
-            status: 'active',
+            status: 'development',
             icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="11" r="2" stroke="currentColor" stroke-width="1.5"/>'
         },
         {
@@ -273,7 +272,7 @@
             tagline: 'Agentic AI Orchestration Platform',
             description: 'Design, deploy, and manage autonomous AI agent networks with built-in safety rails, human-in-the-loop controls, and multi-agent coordination. Production-grade agentic infrastructure for the enterprise.',
             category: 'ai-ml',
-            status: 'active',
+            status: 'development',
             icon: '<circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="5" cy="19" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="19" cy="19" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v4M10 13l-3.5 4.5M14 13l3.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="13" r="2" stroke="currentColor" stroke-width="1.5"/>'
         },
         {
@@ -282,7 +281,7 @@
             tagline: 'Zero Trust Network Architecture Platform',
             description: 'End-to-end Zero Trust implementation with microsegmentation, continuous authentication, and real-time policy enforcement. Deploys across cloud, on-prem, and edge environments with a unified control plane.',
             category: 'cybersecurity',
-            status: 'active',
+            status: 'development',
             icon: '<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 12L11 15L16 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
         },
         {
@@ -291,7 +290,7 @@
             tagline: 'Quantum Computing Infrastructure Framework',
             description: 'Unified abstraction layer for hybrid quantum-classical workloads. Q-Fabric provides circuit optimization, error mitigation, and hardware-agnostic execution across major quantum platforms with integrated classical co-processing.',
             category: 'quantum',
-            status: 'beta',
+            status: 'development',
             icon: '<circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M12 4V2M12 22V20M4 12H2M22 12H20M19.07 19.07L17.66 17.66M6.34 6.34L4.93 4.93M19.07 4.93L17.66 6.34M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'
         },
         {
@@ -300,7 +299,7 @@
             tagline: 'ML Operations & Observability Suite',
             description: 'Full-lifecycle ML operations platform with model versioning, drift detection, automated retraining pipelines, and real-time inference monitoring. Built for teams shipping models to production at scale.',
             category: 'ai-ml',
-            status: 'active',
+            status: 'development',
             icon: '<path d="M3 12h4l3-9 4 18 3-9h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
         },
         {
@@ -309,16 +308,16 @@
             tagline: 'AI-Driven Threat Intelligence & Response',
             description: 'Continuous threat landscape analysis powered by machine learning. ThreatPulse correlates signals across your attack surface, generates actionable intelligence, and orchestrates automated incident response workflows.',
             category: 'cybersecurity',
-            status: 'active',
+            status: 'development',
             icon: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
         },
         {
-            id: 'echo-vault',
-            name: 'EchoVault',
-            tagline: 'Unified Security & Compliance Platform',
-            description: 'Centralized secrets management, policy-as-code compliance enforcement, and audit trail generation across multi-cloud environments. Integrates with QuantumShield for post-quantum key management.',
-            category: 'platform',
-            status: 'beta',
+            id: 'knowledge-vault',
+            name: 'KnowledgeVault',
+            tagline: 'Intelligent Knowledge Management & Retrieval',
+            description: 'AI-powered knowledge base that ingests, indexes, and surfaces organizational knowledge in real time. Features semantic search, automated summarization, and context-aware retrieval for enterprise decision-making.',
+            category: 'ai-ml',
+            status: 'development',
             icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/>'
         }
     ];
@@ -327,23 +326,21 @@
        STATUS BADGES
     ---------------------------------------------------------------- */
     const STATUS_CONFIG = {
-        'active':      { label: 'Active',       cls: 'status-active' },
-        'beta':        { label: 'Beta',          cls: 'status-beta' },
-        'coming-soon': { label: 'Coming Soon',   cls: 'status-coming' }
+        'development': { label: 'In Development', cls: 'status-dev' },
+        'beta':        { label: 'Beta',            cls: 'status-beta' },
+        'coming-soon': { label: 'Coming Soon',     cls: 'status-coming' }
     };
 
     const CATEGORY_LABELS = {
         'quantum':        'Quantum',
         'ai-ml':          'AI / ML',
-        'cybersecurity':  'Cybersecurity',
-        'platform':       'Platform'
+        'cybersecurity':  'Cybersecurity'
     };
 
     const CATEGORY_COLORS = {
         'quantum':        '#6366f1',
         'ai-ml':          '#8b5cf6',
-        'cybersecurity':  '#ec4899',
-        'platform':       '#06b6d4'
+        'cybersecurity':  '#ec4899'
     };
 
     /* ----------------------------------------------------------------
