@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RQL Simulator — EchoSpark</title>
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+/* ============================================================== */
+/*  CSS VARIABLES — EchoSpark Design System                        */
+/* ============================================================== */
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --secondary: #8b5cf6;
+    --accent: #ec4899;
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #111118;
+    --bg-tertiary: #1a1a24;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #71717a;
+    --border: rgba(255, 255, 255, 0.1);
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --gradient-accent: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ============================================================== */
+/*  ANIMATED BACKGROUND                                            */
+/* ============================================================== */
+.animated-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+}
+.gradient-orb {
+    position: absolute; border-radius: 50%; filter: blur(80px);
+    animation: float 20s ease-in-out infinite;
+}
+.orb-1 { width: 600px; height: 600px; background: rgba(99,102,241,0.08); top: -200px; left: -100px; }
+.orb-2 { width: 500px; height: 500px; background: rgba(139,92,246,0.06); top: 50%; right: -150px; animation-delay: -7s; }
+.orb-3 { width: 400px; height: 400px; background: rgba(236,72,153,0.04); bottom: -100px; left: 30%; animation-delay: -14s; }
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -30px) scale(1.05); }
+    66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* ============================================================== */
+/*  COMPILATION TRACKER (RED BAR)                                  */
+/* ============================================================== */
+#compilationTracker {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+    background: rgba(20, 0, 0, 0.95);
+    border-bottom: 2px solid #ef4444;
+    padding: 8px 24px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+#compilationTracker.visible { display: flex; }
+.tracker-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #fca5a5;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.tracker-pips {
+    display: flex; gap: 6px;
+}
+.tracker-pip {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid #ef4444;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    transition: all 0.3s ease;
+}
+.tracker-pip.used {
+    background: #ef4444; color: white;
+}
+.tracker-pip.available {
+    background: transparent; color: #ef4444;
+}
+.tracker-count {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ef4444;
+}
+.tracker-logout {
+    background: transparent;
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5;
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+.tracker-logout:hover {
+    background: rgba(239,68,68,0.15);
+    border-color: #ef4444;
+}
+
+/* ============================================================== */
+/*  ACCESS WALL                                                    */
+/* ============================================================== */
+#accessWall {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-primary);
+}
+#accessWall.hidden { display: none; }
+
+.wall-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 3rem 2.5rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease-out;
+}
+.wall-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient-accent);
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wall-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px;
+    background: var(--gradient-primary);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+    margin-bottom: 1.5rem;
+}
+.wall-logo span {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem; font-weight: 800; color: white;
+    letter-spacing: -0.02em;
+}
+.wall-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.6rem; font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+.wall-subtitle {
+    font-size: 0.9rem; color: var(--text-tertiary);
+    margin-bottom: 2rem; line-height: 1.6;
+}
+.wall-input-group {
+    position: relative;
+    margin-bottom: 1rem;
+}
+.wall-input {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+    transition: var(--transition);
+    outline: none;
+}
+.wall-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+}
+.wall-input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.2);
+    animation: shake 0.4s ease;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-4px); }
+}
+.wall-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+}
+.wall-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.5);
+}
+.wall-btn:active { transform: scale(0.98); }
+.wall-error {
+    color: #ef4444;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    min-height: 1.2em;
+}
+.wall-footer {
+    margin-top: 2rem;
+    font-size: 0.72rem;
+    color: var(--text-tertiary);
+}
+.wall-footer a {
+    color: var(--primary-light);
+    text-decoration: none;
+}
+
+/* ============================================================== */
+/*  MAIN APP LAYOUT                                                */
+/* ============================================================== */
+#mainApp { display: none; position: relative; z-index: 1; }
+#mainApp.visible { display: flex; }
+
+.app-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0d0d14 0%, #0a0a0f 50%, #0f0f18 100%);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    padding-top: 44px;
+    overflow-y: auto;
+    z-index: 100;
+}
+.app-sidebar::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient-accent); z-index: 10;
+}
+
+.sidebar-brand {
+    text-align: center;
+    padding: 1.5rem 1rem 0.5rem;
+}
+.sidebar-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; height: 52px;
+    background: var(--gradient-primary);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    margin-bottom: 0.5rem;
+}
+.sidebar-logo span {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem; font-weight: 800; color: white;
+}
+.sidebar-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem; font-weight: 700;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.sidebar-sub {
+    font-size: 0.72rem; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.sidebar-divider {
+    border: none; height: 1px;
+    background: var(--border);
+    margin: 1rem 1rem;
+}
+
+/* Navigation Items */
+.nav-items { padding: 0 0.5rem; }
+.nav-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 2px;
+}
+.nav-item:hover {
+    background: rgba(99,102,241,0.04);
+    border-left-color: rgba(99,102,241,0.25);
+}
+.nav-item.active {
+    background: rgba(99,102,241,0.08);
+    border-left-color: var(--primary);
+}
+.nav-step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: var(--bg-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem; font-weight: 600;
+    color: #52525b;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+.nav-item.active .nav-step-num {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 12px rgba(99,102,241,0.35);
+}
+.nav-item.visited .nav-step-num {
+    background: rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.3);
+    color: #a5b4fc;
+}
+.nav-step-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.84rem; font-weight: 500;
+    color: #52525b;
+    transition: all 0.3s ease;
+}
+.nav-item.active .nav-step-label { color: white; font-weight: 600; }
+.nav-item.visited .nav-step-label { color: #a1a1aa; }
+.nav-item:hover .nav-step-label { color: #a1a1aa; }
+
+/* Sidebar Parameters */
+.sidebar-params {
+    padding: 0 1rem;
+}
+.param-header {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    color: #52525b; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 0.75rem;
+}
+.param-group {
+    margin-bottom: 1rem;
+}
+.param-label {
+    font-size: 0.78rem; color: var(--text-tertiary);
+    margin-bottom: 0.3rem; display: block;
+}
+.param-slider {
+    width: 100%;
+    -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px;
+    background: var(--bg-tertiary);
+    outline: none;
+}
+.param-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gradient-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+}
+.param-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: var(--primary-light);
+    float: right;
+}
+.param-select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+}
+.param-select:focus { border-color: var(--primary); }
+
+.sidebar-footer {
+    text-align: center; padding: 1rem;
+}
+.sidebar-footer a {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem; font-weight: 500;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+}
+
+/* Main Content */
+.app-main {
+    margin-left: 260px;
+    padding: 60px 2.5rem 3rem;
+    max-width: 1200px;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ============================================================== */
+/*  REUSABLE COMPONENTS                                            */
+/* ============================================================== */
+.hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800; line-height: 1.1;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientShift 4s ease-in-out infinite;
+    margin-bottom: 0.5rem;
+}
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffffff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.75rem;
+}
+.subtitle-text {
+    font-size: 0.95rem; color: var(--text-secondary);
+    line-height: 1.7; max-width: 900px; margin-bottom: 1.5rem;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--primary-light);
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 50px;
+    padding: 0.35rem 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.glass-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    position: relative; overflow: hidden;
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+.glass-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient-primary);
+}
+.glass-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.1);
+}
+.accent-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    position: relative; overflow: hidden;
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+.accent-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+}
+
+.card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.15rem; font-weight: 700;
+    color: var(--text-primary); margin-bottom: 0.5rem;
+}
+.card-body {
+    font-size: 0.9rem; color: #b0b0b8; line-height: 1.65;
+}
+.card-body strong { color: #e0e0e8; font-weight: 600; }
+
+/* Stats Row */
+.stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 1.5rem 0;
+}
+.stat-box {
+    text-align: center; padding: 1.25rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    position: relative; overflow: hidden;
+    transition: var(--transition);
+}
+.stat-box::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient-primary);
+}
+.stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--primary-light); line-height: 1.2;
+}
+.stat-label {
+    font-size: 0.78rem; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-top: 0.3rem;
+}
+
+/* Cell Library Cards */
+.cell-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin: 1.5rem 0;
+}
+.cell-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    transition: var(--transition);
+}
+.cell-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.1);
+}
+.cell-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--primary-light); margin-bottom: 0.25rem;
+}
+.cell-desc {
+    font-size: 0.84rem; color: #a1a1aa; line-height: 1.55;
+    margin-bottom: 0.5rem;
+}
+.cell-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--text-tertiary);
+    background: rgba(99,102,241,0.08);
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    display: inline-block;
+}
+
+/* Buttons */
+.btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--gradient-primary);
+    border: none; border-radius: var(--radius-md);
+    color: white; font-family: 'Inter', sans-serif;
+    font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.5);
+}
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled {
+    opacity: 0.5; cursor: not-allowed;
+    transform: none; box-shadow: none;
+}
+
+.btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary); font-family: 'Inter', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: var(--transition);
+}
+.btn-secondary:hover {
+    background: rgba(99,102,241,0.15);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+/* Code Editor */
+.code-editor {
+    width: 100%;
+    min-height: 200px;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: var(--transition);
+}
+.code-editor:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+}
+
+/* Summary Boxes */
+.summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; margin: 1.5rem 0;
+}
+.summary-pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem; color: var(--text-secondary);
+    white-space: pre-wrap;
+    background: transparent;
+}
+
+/* Tabs */
+.tab-bar {
+    display: flex; gap: 0.25rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.35rem;
+    margin-bottom: 1.5rem;
+}
+.tab-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    background: transparent;
+    border: none; border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.tab-btn:hover { background: rgba(99,102,241,0.1); color: var(--text-primary); }
+.tab-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Metrics Row */
+.metrics-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin: 1.5rem 0;
+}
+.metric-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+    position: relative; overflow: hidden;
+    transition: var(--transition);
+}
+.metric-box::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--gradient-primary);
+}
+.metric-box:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.15);
+}
+.metric-label {
+    font-size: 0.78rem; font-weight: 500;
+    color: #a1a1aa; text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 0.3rem;
+}
+.metric-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--primary-light);
+}
+
+/* Canvas Chart */
+.chart-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem; margin: 1rem 0;
+    overflow: hidden;
+}
+.chart-container canvas {
+    width: 100%; display: block;
+}
+
+/* Select / Input styling */
+.form-select, .form-input {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: var(--transition);
+}
+.form-select:focus, .form-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+}
+
+.form-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin: 1rem 0;
+}
+.form-group {
+    display: flex; flex-direction: column; gap: 0.3rem;
+}
+.form-label {
+    font-size: 0.78rem; color: var(--text-tertiary); font-weight: 500;
+}
+
+/* Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: separate; border-spacing: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden; border: 1px solid var(--border);
+    margin: 1rem 0;
+}
+.data-table th {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600; font-size: 0.82rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 0.75rem 1rem; text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.data-table td {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(99,102,241,0.05); }
+.data-table td:first-child { font-weight: 600; color: var(--primary-light); }
+
+/* Footer */
+.app-footer {
+    text-align: center; padding: 2rem 0 1rem;
+    font-size: 0.78rem; color: var(--text-tertiary);
+    border-top: 1px solid var(--border);
+    margin-top: 3rem;
+}
+.footer-brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Success/Warning/Error */
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    margin: 1rem 0;
+}
+.alert-success {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: #86efac;
+}
+.alert-warning {
+    background: rgba(234,179,8,0.1);
+    border: 1px solid rgba(234,179,8,0.3);
+    color: #fde047;
+}
+.alert-error {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+}
+
+/* Checkbox */
+.form-checkbox {
+    display: flex; align-items: center; gap: 0.5rem;
+    cursor: pointer; font-size: 0.85rem;
+}
+.form-checkbox input { accent-color: var(--primary); width: 16px; height: 16px; }
+
+/* Placed cells badges */
+.placed-cells {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;
+}
+.placed-cell {
+    display: inline-block;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 8px; padding: 0.3rem 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; color: var(--primary-light);
+}
+
+/* Page sections */
+.page { display: none; }
+.page.active { display: block; }
+
+/* Quick Start Steps */
+.step-row {
+    display: flex; align-items: flex-start;
+    gap: 1rem; padding: 0.75rem 0;
+}
+.step-num {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gradient-primary);
+    color: white; font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+}
+.step-text {
+    font-size: 0.95rem; color: #a1a1aa; line-height: 1.6;
+    padding-top: 0.15rem;
+}
+.step-text strong { color: white; }
+
+/* Spinner */
+.spinner-overlay {
+    display: none; position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,10,15,0.8);
+    z-index: 9998;
+    align-items: center; justify-content: center;
+}
+.spinner-overlay.visible { display: flex; }
+.spinner-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem 3rem;
+    text-align: center;
+}
+.spinner-ring {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem; color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .app-sidebar { width: 220px; }
+    .app-main { margin-left: 220px; padding: 60px 1.5rem 2rem; }
+    .stats-row, .cell-grid { grid-template-columns: repeat(2, 1fr); }
+    .summary-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .metrics-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+    .app-sidebar { display: none; }
+    .app-main { margin-left: 0; padding: 60px 1rem 2rem; }
+    .stats-row, .cell-grid { grid-template-columns: 1fr; }
+}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BP724NMT95"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-BP724NMT95');
+</script>
+<body>
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Compilation Tracker -->
+    <div id="compilationTracker">
+        <span class="tracker-label">Compilations Remaining</span>
+        <div class="tracker-pips" id="trackerPips"></div>
+        <span class="tracker-count" id="trackerCount">5/5</span>
+        <button class="tracker-logout" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Access Wall -->
+    <div id="accessWall">
+        <div class="wall-card">
+            <div class="wall-logo"><span>RQL</span></div>
+            <h1 class="wall-title">RQL Simulator</h1>
+            <p class="wall-subtitle">
+                Enter your access code to launch the Reciprocal Quantum Logic gate simulator.
+            </p>
+            <div class="wall-input-group">
+                <input type="text" id="codeInput" class="wall-input"
+                       placeholder="xxxxx-xxxxx-xxxxx-xxxxx"
+                       autocomplete="off" spellcheck="false">
+            </div>
+            <button class="wall-btn" onclick="validateCode()">Access Simulator</button>
+            <div class="wall-error" id="wallError"></div>
+            <div class="wall-footer">
+                <a href="/products">← Back to Products</a> &nbsp;·&nbsp;
+                &copy; 2026 EchoSpark
+            </div>
+        </div>
+    </div>
+
+    <!-- Spinner -->
+    <div class="spinner-overlay" id="spinner">
+        <div class="spinner-box">
+            <div class="spinner-ring"></div>
+            <div class="spinner-text" id="spinnerText">Compiling…</div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp">
+        <!-- Sidebar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-logo"><span>RQL</span></div>
+                <div class="sidebar-title">RQL Simulator</div>
+                <div class="sidebar-sub">Reciprocal Quantum Logic</div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="nav-items" id="navItems"></div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-params">
+                <div class="param-header">Parameters</div>
+                <div class="param-group">
+                    <label class="param-label">Clock freq (GHz) <span class="param-value" id="clockFreqVal">20</span></label>
+                    <input type="range" class="param-slider" id="clockFreq" min="1" max="50" value="20" step="1">
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Clock phases</label>
+                    <select class="param-select" id="clockPhases">
+                        <option value="2">2</option>
+                        <option value="4" selected>4</option>
+                        <option value="8">8</option>
+                    </select>
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Bias ratio (Ibias/Ic) <span class="param-value" id="biasRatioVal">0.70</span></label>
+                    <input type="range" class="param-slider" id="biasRatio" min="30" max="95" value="70" step="1">
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Temperature (K) <span class="param-value" id="tempVal">4.2</span></label>
+                    <input type="range" class="param-slider" id="temperature" min="0" max="100" value="42" step="1">
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-footer">
+                <a href="https://esrpo.com">EchoSpark Design System v1.2</a>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="app-main" id="appContent"></main>
+    </div>
+
+<script>
+/* ================================================================
+   RQL SIMULATOR — FULL CLIENT-SIDE APPLICATION
+   ================================================================ */
+
+// ====================================================================
+//  SECURITY LAYER — SHA-256 hashed credentials, integrity storage
+// ====================================================================
+
+/* Pure-JS SHA-256 (works on file:// without crypto.subtle) */
+const _$h = (function() {
+    const K = new Uint32Array([
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ]);
+    function rr(n, x) { return (x >>> n) | (x << (32 - n)); }
+    return function(str) {
+        const bytes = new TextEncoder().encode(str);
+        const len = bytes.length;
+        const bl = ((len + 9 + 63) & ~63);
+        const buf = new ArrayBuffer(bl);
+        const dv = new DataView(buf);
+        const u8 = new Uint8Array(buf);
+        u8.set(bytes); u8[len] = 0x80;
+        dv.setUint32(bl - 4, len * 8, false);
+        let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a;
+        let h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+        const W = new Int32Array(64);
+        for (let off = 0; off < bl; off += 64) {
+            for (let i = 0; i < 16; i++) W[i] = dv.getInt32(off + i * 4, false);
+            for (let i = 16; i < 64; i++) {
+                const s0 = rr(7,W[i-15]) ^ rr(18,W[i-15]) ^ (W[i-15]>>>3);
+                const s1 = rr(17,W[i-2]) ^ rr(19,W[i-2]) ^ (W[i-2]>>>10);
+                W[i] = (W[i-16] + s0 + W[i-7] + s1) | 0;
+            }
+            let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+            for (let i = 0; i < 64; i++) {
+                const S1 = rr(6,e) ^ rr(11,e) ^ rr(25,e);
+                const ch = (e & f) ^ (~e & g);
+                const t1 = (h + S1 + ch + K[i] + W[i]) | 0;
+                const S0 = rr(2,a) ^ rr(13,a) ^ rr(22,a);
+                const mj = (a & b) ^ (a & c) ^ (b & c);
+                const t2 = (S0 + mj) | 0;
+                h=g; g=f; f=e; e=(d+t1)|0; d=c; c=b; b=a; a=(t1+t2)|0;
+            }
+            h0=(h0+a)|0; h1=(h1+b)|0; h2=(h2+c)|0; h3=(h3+d)|0;
+            h4=(h4+e)|0; h5=(h5+f)|0; h6=(h6+g)|0; h7=(h7+h)|0;
+        }
+        const hx = n => (n >>> 0).toString(16).padStart(8, '0');
+        return hx(h0)+hx(h1)+hx(h2)+hx(h3)+hx(h4)+hx(h5)+hx(h6)+hx(h7);
+    };
+})();
+
+/* Credential salt (encoded to prevent plain-text extraction) */
+const _$p = [101,115,114,112,111,95,114,113,108,115,105,109,95,50,48,50,54]
+    .map(function(c){return String.fromCharCode(c)}).join('');
+
+/* Hashed access codes — SHA-256(salt + plaintext).  Plaintext codes are
+   NOT stored anywhere in this file. Only their irreversible hashes. */
+const _$c = Object.freeze([
+    '5a9f71c9d09642c799adfd28589f7428fc7b4a5dbf428282b169c4ce3ac89a77',
+    '2d88477ef23f2a0003d9f34d60db1cb348402cd8e9fd083438e05ef062921c90',
+    'b3454fcfa43f8677550da29a6ede4913400a5897885eb2477a868d1b84e7e778',
+    'ab910e4e1290e044fbee9df417a4ad9f51b7674d5026b0d20138458caceadf34',
+    'a6c93cd2901a2292151f7cfedd8649532c72afac5d17354861c60afe97e9b2d6',
+    '1c3d903492b1b29e41c09215950dd7d6250b9f578f3424becf9f551a136528aa',
+    '50c5c531a3ef4f636e6bf4a919b5280e61d41142b3adf519abacce87ea06ce14',
+    '0d2a35628ac2084af4b7b3b3f3e0e039ee3a5f8cd1828a7955c7dbace0d0db20',
+    '31e4ddf588bccebc50ab1692adc616c4ad2f77a2c700b045b41a0bed36b1718c',
+    'f98fa6e6fbd483437f63088c1e95625698457debd837cc6eca251e885df166dd',
+    '3fd3ad9338f56718793ab5c2857229691370639a54e73906edcf3659b32b28c7',
+    '56158496f7489ea3081a1723eb528e38658fe236d41e62fa2f421d978932f567',
+    '87d5cc89b55826d30a2e346177402ad122e19649600188b884e0c29673617876',
+    '772c96dfa500368b6d4bd0d9a01dc190099339f5f9912d1a451b07e8531964b5',
+    'fa0fa5af88ae8c0eb4396060a67643a8796725b6ed9a39a65d33916548c37057'
+]);
+
+/* Master credential hash — unlimited compilations */
+const _$m = 'a181a0aec38498336e71bb1c852782c4c9a14f0916c92966fce24d4379ba3ecd';
+
+/* Integrity signing key (derived from salt) */
+const _$ik = '7238a5874bc008788dca6477fe7a4e0a';
+
+const MAX_COMPILATIONS = 5;
+const _$SK = 'rqlsim_v2';
+const _$AK = '_rql_ac';
+
+// ====================================================================
+//  INTEGRITY-PROTECTED STORAGE
+// ====================================================================
+function _$sign(obj) {
+    return _$h(_$ik + JSON.stringify(obj) + _$ik);
+}
+
+function getCodeData() {
+    try {
+        const raw = localStorage.getItem(_$SK);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        if (!parsed._d || !parsed._s || _$sign(parsed._d) !== parsed._s) {
+            localStorage.removeItem(_$SK);
+            return {};
+        }
+        return parsed._d;
+    } catch {
+        localStorage.removeItem(_$SK);
+        return {};
+    }
+}
+
+function saveCodeData(data) {
+    const sig = _$sign(data);
+    localStorage.setItem(_$SK, JSON.stringify({ _d: data, _s: sig }));
+}
+
+function getActiveCode() {
+    return sessionStorage.getItem(_$AK) || null;
+}
+
+function setActiveCode(hash) {
+    sessionStorage.setItem(_$AK, hash);
+}
+
+function isMasterSession() {
+    return getActiveCode() === _$m;
+}
+
+function getRemainingCompilations(codeHash) {
+    if (codeHash === _$m) return Infinity;
+    const data = getCodeData();
+    if (!(codeHash in data)) return MAX_COMPILATIONS;
+    return Math.max(0, MAX_COMPILATIONS - data[codeHash]);
+}
+
+function useCompilation(codeHash) {
+    if (codeHash === _$m) return Infinity;
+    const data = getCodeData();
+    if (!(codeHash in data)) data[codeHash] = 0;
+    data[codeHash]++;
+    saveCodeData(data);
+    return Math.max(0, MAX_COMPILATIONS - data[codeHash]);
+}
+
+// ====================================================================
+//  ACCESS WALL
+// ====================================================================
+function validateCode() {
+    const input = document.getElementById('codeInput');
+    const error = document.getElementById('wallError');
+    const code = input.value.trim().toLowerCase();
+
+    if (!code) {
+        input.classList.add('error');
+        error.textContent = 'Please enter an access code.';
+        setTimeout(() => input.classList.remove('error'), 500);
+        return;
+    }
+
+    const hash = _$h(_$p + code);
+
+    if (hash !== _$m && !_$c.includes(hash)) {
+        input.classList.add('error');
+        error.textContent = 'Invalid access code. Please check and try again.';
+        setTimeout(() => input.classList.remove('error'), 500);
+        return;
+    }
+
+    const remaining = getRemainingCompilations(hash);
+    if (remaining <= 0) {
+        input.classList.add('error');
+        error.textContent = 'This code has exhausted all compilations. Please use a different code.';
+        setTimeout(() => input.classList.remove('error'), 500);
+        return;
+    }
+
+    error.textContent = '';
+    setActiveCode(hash);
+    showApp();
+}
+
+function showApp() {
+    document.getElementById('accessWall').classList.add('hidden');
+    document.getElementById('mainApp').classList.add('visible');
+    document.getElementById('compilationTracker').classList.add('visible');
+    updateTracker();
+    initApp();
+}
+
+function logout() {
+    sessionStorage.removeItem(_$AK);
+    document.getElementById('accessWall').classList.remove('hidden');
+    document.getElementById('mainApp').classList.remove('visible');
+    document.getElementById('compilationTracker').classList.remove('visible');
+    document.getElementById('codeInput').value = '';
+    document.getElementById('wallError').textContent = '';
+}
+
+function updateTracker() {
+    const hash = getActiveCode();
+    if (!hash) return;
+    const pipsEl = document.getElementById('trackerPips');
+    const countEl = document.getElementById('trackerCount');
+
+    if (hash === _$m) {
+        pipsEl.innerHTML = '<div class="tracker-pip available" style="background:#22c55e;border-color:#22c55e;color:white;width:auto;border-radius:12px;padding:0 10px;">∞</div>';
+        countEl.textContent = 'UNLIMITED';
+        countEl.style.color = '#22c55e';
+        return;
+    }
+
+    countEl.style.color = '#ef4444';
+    const remaining = getRemainingCompilations(hash);
+    let html = '';
+    for (let i = 0; i < MAX_COMPILATIONS; i++) {
+        const used = i < (MAX_COMPILATIONS - remaining);
+        html += `<div class="tracker-pip ${used ? 'used' : 'available'}">${i + 1}</div>`;
+    }
+    pipsEl.innerHTML = html;
+    countEl.textContent = `${remaining}/${MAX_COMPILATIONS}`;
+}
+
+function tryCompile() {
+    const hash = getActiveCode();
+    if (!hash) return false;
+
+    /* Master code — unlimited compilations, no deduction */
+    if (hash === _$m) return true;
+
+    const remaining = getRemainingCompilations(hash);
+    if (remaining <= 0) {
+        alert('No compilations remaining for this access code.');
+        logout();
+        return false;
+    }
+    const left = useCompilation(hash);
+    updateTracker();
+    if (left <= 0) {
+        setTimeout(() => {
+            alert('All compilations used for this access code. You will be returned to the access screen.');
+            logout();
+        }, 1500);
+    }
+    return true;
+}
+
+// ====================================================================
+//  ANTI-TAMPER PROTECTIONS
+// ====================================================================
+/* Periodic integrity check — wipe if storage is tampered */
+setInterval(function() {
+    try {
+        const raw = localStorage.getItem(_$SK);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (!parsed._d || !parsed._s || _$sign(parsed._d) !== parsed._s) {
+                localStorage.removeItem(_$SK);
+                const ac = getActiveCode();
+                if (ac && ac !== _$m) logout();
+            }
+        }
+    } catch { localStorage.removeItem(_$SK); }
+}, 10000);
+
+/* Keypress handler */
+document.getElementById('codeInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') validateCode();
+});
+
+// ====================================================================
+//  PHYSICAL CONSTANTS
+// ====================================================================
+const PHI_0 = 2.067833848e-15;
+const K_B = 1.380649e-23;
+const TWO_PI = 2 * Math.PI;
+const TWO_PI_OVER_PHI0 = TWO_PI / PHI_0;
+const DEFAULT_IC = 250e-6;
+const DEFAULT_R = 1.72;
+const DEFAULT_C = 0.5e-12;
+const DEFAULT_L = 2.0e-12;
+const PARASITIC_CAP = 500e-15;
+const PARASITIC_R = 5000.0;
+
+// ====================================================================
+//  RQL CELL LIBRARY
+// ====================================================================
+const CELL_LIBRARY = {
+    JTL: {
+        desc: 'Josephson Transmission Line — single buffer stage',
+        ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0}], latency: 1,
+        portMap: {in:'pin_in', out:'pin_out'},
+    },
+    SPLITTER: {
+        desc: 'Fan-out splitter — 1 input to 2 outputs',
+        ports: [{n:'in',d:'input'},{n:'out1',d:'output'},{n:'out2',d:'output'}],
+        junctions: [{name:'JJ1',np:'n2',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n3',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'L1',np:'n1',nm:'n2',L:1.5e-12},{name:'L2',np:'n1',nm:'n3',L:1.5e-12},{name:'Lout1',np:'n2',nm:'pin_out1',L:2e-12},{name:'Lout2',np:'n3',nm:'pin_out2',L:2e-12}],
+        bias: [{node:'n2',offset:0},{node:'n3',offset:0}], latency: 1,
+        portMap: {in:'pin_in', out1:'pin_out1', out2:'pin_out2'},
+    },
+    MERGER: {
+        desc: 'Confluence buffer — OR-like merger',
+        ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*0.85}],
+        inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2.5e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2.5e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0}], latency: 1,
+        portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
+    },
+    AND: {
+        desc: 'RQL AND gate — both inputs needed',
+        ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*1.4}],
+        inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0}], latency: 1,
+        portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
+    },
+    OR: {
+        desc: 'RQL OR gate — either input sufficient',
+        ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*0.85},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2.5e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2.5e-12},{name:'Lm',np:'n1',nm:'n2',L:2e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0},{node:'n2',offset:0}], latency: 1,
+        portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
+    },
+    XOR: {
+        desc: 'RQL XOR gate — balanced comparator',
+        ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2e-12},{name:'Lm',np:'n1',nm:'n2',L:3e-12},{name:'Lb',np:'pin_in2',nm:'n2',L:2e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0},{node:'n2',offset:0}], latency: 1,
+        portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
+    },
+    NOT: {
+        desc: 'RQL inverter — complement via clock-phase inversion',
+        ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lm',np:'n1',nm:'n2',L:3e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0},{node:'n2',offset:180}], latency: 1,
+        portMap: {in:'pin_in', out:'pin_out'},
+    },
+    DFF: {
+        desc: 'D flip-flop — single-phase pipeline register',
+        ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
+        junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
+        inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lstore',np:'n1',nm:'n2',L:5e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
+        bias: [{node:'n1',offset:0},{node:'n2',offset:90}], latency: 2,
+        portMap: {in:'pin_in', out:'pin_out'},
+    },
+};
+
+// ====================================================================
+//  VERILOG PARSER (JS port)
+// ====================================================================
+function parseVerilog(text) {
+    text = text.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const modRe = /module\s+(\w+)\s*\(([^)]*)\)\s*;([\s\S]*?)endmodule/g;
+    const modules = [];
+    let m;
+    while ((m = modRe.exec(text)) !== null) {
+        const mod = { name: m[1], ports: {}, wires: [], assigns: [], instances: [] };
+        const portStr = m[2]; const body = m[3];
+
+        // ANSI ports
+        const ansiRe = /(input|output|inout)\s+(?:\[.*?\]\s*)?(\w+)/g;
+        let ap;
+        const portNames = portStr.split(',').map(s => s.trim()).filter(Boolean);
+        let isAnsi = false;
+        for (const pn of portNames) {
+            const am = pn.match(/^(input|output|inout)\s+(?:\[.*?\]\s*)?(\w+)$/);
+            if (am) { mod.ports[am[2]] = am[1]; isAnsi = true; }
+        }
+        if (!isAnsi) {
+            for (const pn of portNames) {
+                const clean = pn.replace(/\[.*?\]\s*/g, '').trim();
+                if (clean) mod.ports[clean] = 'inout';
+            }
+            for (const dir of ['input', 'output', 'inout']) {
+                const dr = new RegExp(dir + '\\s+([^;]+);', 'g');
+                let dm;
+                while ((dm = dr.exec(body)) !== null) {
+                    dm[1].split(',').forEach(n => {
+                        const nc = n.replace(/\[.*?\]\s*/g, '').trim();
+                        if (nc && nc in mod.ports) mod.ports[nc] = dir;
+                    });
+                }
+            }
+        }
+
+        // Wires
+        const wireRe = /wire\s+([^;]+);/g;
+        let wm;
+        while ((wm = wireRe.exec(body)) !== null) {
+            wm[1].split(',').forEach(n => {
+                const nc = n.replace(/\[.*?\]\s*/g, '').trim();
+                if (nc) mod.wires.push(nc);
+            });
+        }
+
+        // Assigns
+        const assignRe = /assign\s+(\w+)\s*=\s*([^;]+);/g;
+        let am2;
+        while ((am2 = assignRe.exec(body)) !== null) {
+            const lhs = am2[1].trim();
+            const expr = am2[2].trim();
+            let op = null, operands = [];
+
+            if (/^~\s*(\w+)$/.test(expr)) {
+                op = 'not'; operands = [expr.match(/~\s*(\w+)/)[1]];
+            } else if (expr.includes('&')) {
+                op = 'and'; operands = expr.split('&').map(s => s.replace(/[~()\s]/g, ''));
+            } else if (expr.includes('|')) {
+                op = 'or'; operands = expr.split('|').map(s => s.replace(/[~()\s]/g, ''));
+            } else if (expr.includes('^')) {
+                op = 'xor'; operands = expr.split('^').map(s => s.replace(/[~()\s]/g, ''));
+            } else if (/^\w+$/.test(expr)) {
+                op = 'buf'; operands = [expr];
+            }
+            mod.assigns.push({ lhs, expr, op, operands });
+        }
+
+        // Instances
+        const instRe = /(\w+)\s+(?:#\([^)]*\)\s+)?(\w+)\s*\(([^)]*)\)\s*;/g;
+        let im;
+        while ((im = instRe.exec(body)) !== null) {
+            const mtype = im[1];
+            if (['assign','wire','reg','input','output','inout','parameter','module'].includes(mtype)) continue;
+            const iname = im[2];
+            const pstr = im[3];
+            const portMap = {};
+            const named = [...pstr.matchAll(/\.(\w+)\s*\(\s*(\w+)\s*\)/g)];
+            if (named.length) {
+                named.forEach(n => portMap[n[1]] = n[2]);
+            } else {
+                const nets = pstr.split(',').map(s => s.trim()).filter(Boolean);
+                if (['and','or','xor','not','buf','nand','nor','xnor'].includes(mtype.toLowerCase())) {
+                    if (nets.length) {
+                        portMap['out'] = nets[0];
+                        nets.slice(1).forEach((n, i) => portMap[nets.length > 2 ? `in${i+1}` : 'in'] = n);
+                    }
+                } else {
+                    nets.forEach((n, i) => portMap[`port${i}`] = n);
+                }
+            }
+            mod.instances.push({ type: mtype, name: iname, portMap });
+        }
+
+        modules.push(mod);
+    }
+    return modules;
+}
+
+// ====================================================================
+//  CELL MAPPER + NETLIST COMPILER
+// ====================================================================
+function mapAndCompile(vModule, clockFreqGHz, biasRatio, nPhases) {
+    const netlist = { name: vModule.name, ports: {}, nets: {}, instances: {} };
+    const instList = [];
+
+    // Map assigns to cell instances
+    for (const a of vModule.assigns) {
+        if (!a.op) continue;
+        let cellType = a.op.toUpperCase();
+        if (cellType === 'BUF') cellType = 'JTL';
+        if (!(cellType in CELL_LIBRARY)) continue;
+
+        const cell = CELL_LIBRARY[cellType];
+        const iname = `${cellType.toLowerCase()}_${a.lhs}`;
+        const pm = {};
+        const inPorts = cell.ports.filter(p => p.d === 'input');
+        const outPorts = cell.ports.filter(p => p.d === 'output');
+
+        if (outPorts.length) pm[outPorts[0].n] = a.lhs;
+        a.operands.forEach((op, i) => {
+            if (i < inPorts.length) pm[inPorts[i].n] = op;
+            else if (inPorts.length > 0) pm[inPorts[0].n] = op;
+        });
+
+        instList.push({ name: iname, type: cellType, portMap: pm, clockPhase: 0 });
+    }
+
+    // Map gate instances
+    for (const inst of vModule.instances) {
+        let cellType = inst.type.toUpperCase();
+        if (cellType === 'BUF') cellType = 'JTL';
+        if (!(cellType in CELL_LIBRARY)) continue;
+        instList.push({ name: inst.name, type: cellType, portMap: inst.portMap, clockPhase: 0 });
+    }
+
+    // Assign clock phases (simple sequential)
+    instList.forEach((inst, i) => {
+        inst.clockPhase = ((i % nPhases) * (360 / nPhases)) % 360;
+    });
+
+    // Flatten to circuit
+    const flat = {
+        name: vModule.name,
+        junctions: [], inductors: [], sources: [],
+        nodes: new Set(),
+    };
+
+    for (const inst of instList) {
+        const cell = CELL_LIBRARY[inst.type];
+        if (!cell) continue;
+        const prefix = inst.name;
+
+        // Build node map
+        const nodeMap = { GND: 'GND' };
+        for (const p of cell.ports) {
+            const intNode = cell.portMap[p.n];
+            const extNet = inst.portMap[p.n];
+            nodeMap[intNode] = extNet || `${prefix}__${intNode}`;
+        }
+
+        // Map internal nodes
+        for (const jj of cell.junctions) {
+            if (!(jj.np in nodeMap)) nodeMap[jj.np] = `${prefix}__${jj.np}`;
+            if (!(jj.nm in nodeMap)) nodeMap[jj.nm] = `${prefix}__${jj.nm}`;
+        }
+        for (const ind of cell.inductors) {
+            if (!(ind.np in nodeMap)) nodeMap[ind.np] = `${prefix}__${ind.np}`;
+            if (!(ind.nm in nodeMap)) nodeMap[ind.nm] = `${prefix}__${ind.nm}`;
+        }
+
+        // Emit junctions
+        for (const jj of cell.junctions) {
+            const jjObj = {
+                name: `${prefix}__${jj.name}`,
+                Ic: jj.Ic, R: DEFAULT_R, C: DEFAULT_C,
+                np: nodeMap[jj.np], nm: nodeMap[jj.nm],
+            };
+            flat.junctions.push(jjObj);
+            if (jjObj.np !== 'GND') flat.nodes.add(jjObj.np);
+            if (jjObj.nm !== 'GND') flat.nodes.add(jjObj.nm);
+        }
+
+        // Emit inductors
+        for (const ind of cell.inductors) {
+            const indObj = {
+                name: `${prefix}__${ind.name}`,
+                L: ind.L,
+                np: nodeMap[ind.np], nm: nodeMap[ind.nm],
+            };
+            flat.inductors.push(indObj);
+            if (indObj.np !== 'GND') flat.nodes.add(indObj.np);
+            if (indObj.nm !== 'GND') flat.nodes.add(indObj.nm);
+        }
+
+        // Emit bias sources
+        for (const bias of cell.bias) {
+            const gNode = nodeMap[bias.node] || `${prefix}__${bias.node}`;
+            const phaseDeg = inst.clockPhase + bias.offset;
+            const phaseRad = phaseDeg * Math.PI / 180;
+            let localIc = DEFAULT_IC;
+            for (const jj of cell.junctions) {
+                if (nodeMap[jj.np] === gNode) { localIc = jj.Ic; break; }
+            }
+            flat.sources.push({
+                name: `${prefix}__Ibias_${bias.node}`,
+                np: gNode, nm: 'GND',
+                waveform: 'ac',
+                amplitude: biasRatio * localIc,
+                frequency: clockFreqGHz * 1e9,
+                phase: phaseRad,
+            });
+        }
+    }
+
+    flat.nodes = Array.from(flat.nodes).sort();
+
+    return {
+        netlist: {
+            name: vModule.name,
+            instances: instList,
+            nPorts: Object.keys(vModule.ports).length,
+            nNets: flat.nodes.length,
+        },
+        flat,
+    };
+}
+
+// ====================================================================
+//  RCSJ TRANSIENT SOLVER (JS port)
+// ====================================================================
+function runSimulation(flat, dtPs, tEndPs, temperature, noiseOn) {
+    const dt = dtPs * 1e-12;
+    const tEnd = tEndPs * 1e-12;
+    const nSteps = Math.ceil(tEnd / dt);
+
+    const nodes = flat.nodes;
+    const nNodes = nodes.length;
+    const nJJ = flat.junctions.length;
+    const nInd = flat.inductors.length;
+    const nState = nNodes + nJJ + nInd;
+
+    const nodeIdx = {};
+    nodes.forEach((n, i) => nodeIdx[n] = i);
+
+    // Capacitance per node
+    const nodeCap = new Float64Array(nNodes).fill(PARASITIC_CAP);
+    flat.junctions.forEach(jj => {
+        const ni = nodeIdx[jj.np];
+        if (ni !== undefined) nodeCap[ni] = Math.max(nodeCap[ni], jj.C);
+    });
+
+    // Node damping
+    const jjNodeSet = new Set();
+    flat.junctions.forEach(jj => { if (jj.np in nodeIdx) jjNodeSet.add(nodeIdx[jj.np]); });
+    const nodeDamping = new Float64Array(nNodes);
+    for (let n = 0; n < nNodes; n++) {
+        if (!jjNodeSet.has(n)) nodeDamping[n] = 1.0 / PARASITIC_R;
+    }
+
+    // State vector
+    let y = new Float64Array(nState);
+    const timeArr = new Float64Array(nSteps + 1);
+    // Store history for junctions only (memory efficient)
+    const jjPhaseHistory = flat.junctions.map(() => new Float64Array(nSteps + 1));
+    const jjVoltHistory = flat.junctions.map(() => new Float64Array(nSteps + 1));
+    const nodeVoltHistory = nodes.map(() => new Float64Array(nSteps + 1));
+
+    // Source evaluation
+    function evalSource(src, t) {
+        if (src.waveform === 'ac') {
+            return src.amplitude * Math.sin(TWO_PI * src.frequency * t + (src.phase || 0));
+        } else if (src.waveform === 'pulse') {
+            const d = t - src.pulseTime;
+            return src.amplitude * Math.exp(-0.5 * (d / src.pulseWidth) ** 2);
+        }
+        return 0;
+    }
+
+    // RHS
+    function rhs(t, y, dydt) {
+        const V = y; // 0..nNodes-1
+        const oJJ = nNodes;
+        const oInd = nNodes + nJJ;
+
+        // Zero out
+        for (let i = 0; i < nState; i++) dydt[i] = 0;
+
+        // Junction equations
+        for (let j = 0; j < nJJ; j++) {
+            const jj = flat.junctions[j];
+            const ni = nodeIdx[jj.np];
+            let Vjj = (ni !== undefined) ? V[ni] : 0;
+            if (jj.nm !== 'GND' && jj.nm in nodeIdx) Vjj -= V[nodeIdx[jj.nm]];
+
+            dydt[oJJ + j] = TWO_PI_OVER_PHI0 * Vjj;
+            const Ijj = jj.Ic * Math.sin(y[oJJ + j]) + Vjj / jj.R;
+
+            if (ni !== undefined) dydt[ni] -= Ijj / nodeCap[ni];
+            if (jj.nm !== 'GND' && nodeIdx[jj.nm] !== undefined) {
+                dydt[nodeIdx[jj.nm]] += Ijj / nodeCap[nodeIdx[jj.nm]];
+            }
+        }
+
+        // Inductor equations
+        for (let k = 0; k < nInd; k++) {
+            const ind = flat.inductors[k];
+            const niA = nodeIdx[ind.np];
+            const niB = nodeIdx[ind.nm];
+            const Va = (niA !== undefined) ? V[niA] : 0;
+            const Vb = (niB !== undefined) ? V[niB] : 0;
+            dydt[oInd + k] = (Va - Vb) / ind.L;
+
+            const IL = y[oInd + k];
+            if (niA !== undefined) dydt[niA] -= IL / nodeCap[niA];
+            if (niB !== undefined) dydt[niB] += IL / nodeCap[niB];
+        }
+
+        // Sources
+        for (const src of flat.sources) {
+            const Isrc = evalSource(src, t);
+            const ni = nodeIdx[src.np];
+            if (ni !== undefined) dydt[ni] += Isrc / nodeCap[ni];
+        }
+
+        // Node damping
+        for (let n = 0; n < nNodes; n++) {
+            if (nodeDamping[n] > 0) {
+                dydt[n] -= V[n] * nodeDamping[n] / nodeCap[n];
+            }
+        }
+    }
+
+    // Store initial
+    timeArr[0] = 0;
+    flat.junctions.forEach((_, j) => {
+        jjPhaseHistory[j][0] = 0;
+        jjVoltHistory[j][0] = 0;
+    });
+
+    const dydt = new Float64Array(nState);
+    const vClamp = 0.05;
+
+    // Euler integration
+    for (let step = 0; step < nSteps; step++) {
+        const t = step * dt;
+        timeArr[step] = t;
+
+        rhs(t, y, dydt);
+
+        // Add noise
+        if (noiseOn && temperature > 0) {
+            for (let j = 0; j < nJJ; j++) {
+                const ni = nodeIdx[flat.junctions[j].np];
+                if (ni !== undefined) {
+                    const sigma = Math.sqrt(2 * K_B * temperature / (flat.junctions[j].R * dt));
+                    dydt[ni] += (gaussianRandom() * sigma) / nodeCap[ni];
+                }
+            }
+        }
+
+        // Update state
+        for (let i = 0; i < nState; i++) y[i] += dydt[i] * dt;
+
+        // Clamp voltages
+        for (let n = 0; n < nNodes; n++) {
+            if (y[n] > vClamp) y[n] = vClamp;
+            if (y[n] < -vClamp) y[n] = -vClamp;
+        }
+
+        // Store
+        timeArr[step + 1] = (step + 1) * dt;
+        for (let j = 0; j < nJJ; j++) {
+            jjPhaseHistory[j][step + 1] = y[nNodes + j];
+        }
+        for (let n = 0; n < nNodes; n++) {
+            nodeVoltHistory[n][step + 1] = y[n];
+        }
+    }
+
+    // Compute junction voltages from phase derivative
+    for (let j = 0; j < nJJ; j++) {
+        for (let i = 1; i <= nSteps; i++) {
+            const dphi = jjPhaseHistory[j][i] - jjPhaseHistory[j][i - 1];
+            jjVoltHistory[j][i] = (PHI_0 / TWO_PI) * dphi / dt;
+        }
+    }
+
+    // Detect switching events
+    const switchEvents = {};
+    for (let j = 0; j < nJJ; j++) {
+        const events = [];
+        const phi = jjPhaseHistory[j];
+        for (let i = 1; i <= nSteps; i++) {
+            if (Math.floor(phi[i] / TWO_PI) > Math.floor(phi[i - 1] / TWO_PI)) {
+                events.push(timeArr[i]);
+            }
+        }
+        switchEvents[flat.junctions[j].name] = events;
+    }
+
+    const totalEvents = Object.values(switchEvents).reduce((s, e) => s + e.length, 0);
+
+    return {
+        time: timeArr,
+        jjPhases: flat.junctions.map((jj, j) => ({ name: jj.name, data: jjPhaseHistory[j] })),
+        jjVoltages: flat.junctions.map((jj, j) => ({ name: jj.name, data: jjVoltHistory[j] })),
+        nodeVoltages: nodes.map((n, i) => ({ name: n, data: nodeVoltHistory[i] })),
+        switchEvents,
+        totalEvents,
+        nSteps: nSteps + 1,
+        metadata: { dt, tEnd, temperature, nNodes, nJJ, nInd },
+    };
+}
+
+function gaussianRandom() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(TWO_PI * v);
+}
+
+// ====================================================================
+//  BER PREDICTOR
+// ====================================================================
+function barrierHeight(Ic, Ibias) {
+    const gamma = Math.abs(Ibias) / Ic;
+    if (gamma >= 1) return 0;
+    const EJ = PHI_0 * Ic / TWO_PI;
+    return 2 * EJ * (Math.sqrt(1 - gamma * gamma) - gamma * Math.acos(gamma));
+}
+
+function berPerClock(Ic, R, C, Ibias, fclk, T) {
+    const dU = barrierHeight(Ic, Ibias);
+    if (dU <= 0) return 1;
+    const omega_p = Math.sqrt(TWO_PI * Ic / (PHI_0 * C));
+    const fAttempt = omega_p / TWO_PI;
+    const exponent = dU / (K_B * T);
+    if (exponent > 700) return 0;
+    return (fAttempt / fclk) * Math.exp(-exponent);
+}
+
+// ====================================================================
+//  CANVAS CHART DRAWING
+// ====================================================================
+const CHART_COLORS = ['#818cf8','#ec4899','#06b6d4','#22c55e','#eab308','#f97316','#a78bfa','#f472b6','#34d399','#fbbf24'];
+
+function drawLineChart(canvasId, datasets, xlabel, ylabel, title) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const W = rect.width - 32;
+    const H = 300;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const pad = { t: 40, r: 20, b: 40, l: 65 };
+    const pw = W - pad.l - pad.r;
+    const ph = H - pad.t - pad.b;
+
+    // Background
+    ctx.fillStyle = '#111118';
+    ctx.fillRect(0, 0, W, H);
+
+    // Find ranges
+    let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+    for (const ds of datasets) {
+        for (let i = 0; i < ds.x.length; i++) {
+            if (ds.x[i] < xMin) xMin = ds.x[i];
+            if (ds.x[i] > xMax) xMax = ds.x[i];
+            if (ds.y[i] < yMin) yMin = ds.y[i];
+            if (ds.y[i] > yMax) yMax = ds.y[i];
+        }
+    }
+    if (yMin === yMax) { yMin -= 1; yMax += 1; }
+    const yPad = (yMax - yMin) * 0.1;
+    yMin -= yPad; yMax += yPad;
+
+    function tx(x) { return pad.l + ((x - xMin) / (xMax - xMin)) * pw; }
+    function ty(y) { return pad.t + ph - ((y - yMin) / (yMax - yMin)) * ph; }
+
+    // Grid
+    ctx.strokeStyle = '#222233';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) {
+        const gy = pad.t + (ph / 4) * i;
+        ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l + pw, gy); ctx.stroke();
+        const val = yMax - ((yMax - yMin) / 4) * i;
+        ctx.fillStyle = '#71717a';
+        ctx.font = '10px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(val.toExponential(1), pad.l - 8, gy + 4);
+    }
+
+    // Axes
+    ctx.strokeStyle = '#333344';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + ph);
+    ctx.lineTo(pad.l + pw, pad.t + ph);
+    ctx.stroke();
+
+    // Data lines
+    const step = Math.max(1, Math.floor(datasets[0]?.x.length / 2000));
+    datasets.forEach((ds, di) => {
+        ctx.beginPath();
+        ctx.strokeStyle = CHART_COLORS[di % CHART_COLORS.length];
+        ctx.lineWidth = 1.5;
+        let first = true;
+        for (let i = 0; i < ds.x.length; i += step) {
+            const px = tx(ds.x[i]);
+            const py = ty(ds.y[i]);
+            if (first) { ctx.moveTo(px, py); first = false; }
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+    });
+
+    // Title
+    ctx.fillStyle = '#a1a1aa';
+    ctx.font = 'bold 12px "Space Grotesk", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(title || '', W / 2, 20);
+
+    // Axis labels
+    ctx.font = '10px Inter, sans-serif';
+    ctx.fillStyle = '#71717a';
+    ctx.textAlign = 'center';
+    ctx.fillText(xlabel || '', pad.l + pw / 2, H - 8);
+    ctx.save();
+    ctx.translate(14, pad.t + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(ylabel || '', 0, 0);
+    ctx.restore();
+
+    // Legend
+    if (datasets.length > 1) {
+        const lx = pad.l + 10;
+        let ly = pad.t + 10;
+        datasets.forEach((ds, di) => {
+            ctx.fillStyle = CHART_COLORS[di % CHART_COLORS.length];
+            ctx.fillRect(lx, ly - 4, 12, 3);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '9px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(ds.label || '', lx + 16, ly);
+            ly += 14;
+        });
+    }
+}
+
+// ====================================================================
+//  APP STATE
+// ====================================================================
+let appState = {
+    page: 'Home',
+    netlist: null,
+    flat: null,
+    simResult: null,
+    verilogSource: `module half_adder(input a, input b, output sum_out, output carry);
+    assign sum_out = a ^ b;
+    assign carry = a & b;
+endmodule`,
+    designCells: [],
+};
+
+const PAGES = ['Home', 'Design', 'Simulate', 'Waveforms', 'Clock Phases', 'Bias Margins', 'Reports'];
+
+// ====================================================================
+//  PARAMS
+// ====================================================================
+function getParams() {
+    return {
+        clockFreq: parseFloat(document.getElementById('clockFreq')?.value || 20),
+        nPhases: parseInt(document.getElementById('clockPhases')?.value || 4),
+        biasRatio: parseInt(document.getElementById('biasRatio')?.value || 70) / 100,
+        temperature: parseInt(document.getElementById('temperature')?.value || 42) / 10,
+    };
+}
+
+// ====================================================================
+//  NAV + RENDERING
+// ====================================================================
+function initApp() {
+    buildNav();
+    bindParams();
+    navigateTo('Home');
+}
+
+function buildNav() {
+    const el = document.getElementById('navItems');
+    el.innerHTML = '';
+    PAGES.forEach((p, i) => {
+        const item = document.createElement('div');
+        item.className = 'nav-item' + (p === appState.page ? ' active' : '');
+        item.innerHTML = `<div class="nav-step-num">${i + 1}</div><span class="nav-step-label">${p}</span>`;
+        item.onclick = () => navigateTo(p);
+        el.appendChild(item);
+    });
+}
+
+function navigateTo(page) {
+    appState.page = page;
+    buildNav();
+    renderPage(page);
+}
+
+function bindParams() {
+    const cf = document.getElementById('clockFreq');
+    const br = document.getElementById('biasRatio');
+    const tp = document.getElementById('temperature');
+    if (cf) cf.oninput = () => { document.getElementById('clockFreqVal').textContent = cf.value; };
+    if (br) br.oninput = () => { document.getElementById('biasRatioVal').textContent = (br.value / 100).toFixed(2); };
+    if (tp) tp.oninput = () => { document.getElementById('tempVal').textContent = (tp.value / 10).toFixed(1); };
+}
+
+function showSpinner(text) {
+    document.getElementById('spinnerText').textContent = text || 'Processing…';
+    document.getElementById('spinner').classList.add('visible');
+}
+function hideSpinner() {
+    document.getElementById('spinner').classList.remove('visible');
+}
+
+// ====================================================================
+//  PAGE RENDERERS
+// ====================================================================
+function renderPage(page) {
+    const main = document.getElementById('appContent');
+    switch (page) {
+        case 'Home': main.innerHTML = renderHome(); break;
+        case 'Design': main.innerHTML = renderDesign(); setupDesignEvents(); break;
+        case 'Simulate': main.innerHTML = renderSimulate(); setupSimulateEvents(); break;
+        case 'Waveforms': main.innerHTML = renderWaveforms(); setupWaveformCharts(); break;
+        case 'Clock Phases': main.innerHTML = renderClockPhases(); setupClockCharts(); break;
+        case 'Bias Margins': main.innerHTML = renderBiasMargins(); setupBiasCharts(); break;
+        case 'Reports': main.innerHTML = renderReports(); setupReportCharts(); break;
+    }
+}
+
+// ── HOME ──
+function renderHome() {
+    const cells = Object.entries(CELL_LIBRARY);
+    const cellCards = cells.map(([name, c]) =>
+        `<div class="cell-card">
+            <div class="cell-name">${name}</div>
+            <div class="cell-desc">${c.desc}</div>
+            <span class="cell-meta">JJs: ${c.junctions.length} | Ports: ${c.ports.map(p=>p.n).join(', ')}</span>
+        </div>`
+    ).join('');
+
+    return `
+        <div class="hero-title">RQL Logic Gate Simulator</div>
+        <div class="subtitle-text">
+            A <strong style="color:white">physically accurate</strong> simulator for Reciprocal Quantum Logic
+            superconducting circuits — from Verilog design to fluxon-level transient analysis.
+        </div>
+        <div class="glass-card">
+            <div class="card-title">What is Reciprocal Quantum Logic?</div>
+            <div class="card-body">
+                RQL is a superconducting digital logic family that encodes information as the
+                <em>presence</em> or <em>absence</em> of single flux quantum (SFQ) pulses — quantised
+                voltage spikes of area Φ₀ = h/2e ≈ 2.07 mV·ps. Unlike RSFQ, RQL uses AC power
+                delivery through a resonant clock network, eliminating DC bias resistors and achieving
+                orders-of-magnitude lower power dissipation.
+            </div>
+        </div>
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-value">10–50</div><div class="stat-label">GHz Clock Speed</div></div>
+            <div class="stat-box"><div class="stat-value">< 1</div><div class="stat-label">aJ / Operation</div></div>
+            <div class="stat-box"><div class="stat-value">4.2</div><div class="stat-label">K Operating Temp</div></div>
+            <div class="stat-box"><div class="stat-value">< 10⁻²⁰</div><div class="stat-label">BER per Clock</div></div>
+        </div>
+        <div class="section-title">Architecture</div>
+        <table class="data-table">
+            <thead><tr><th>Layer</th><th>Function</th></tr></thead>
+            <tbody>
+                <tr><td>Frontend</td><td>RTL (Verilog) → RQL cell mapping</td></tr>
+                <tr><td>Compiler</td><td>Netlist → Josephson junction network</td></tr>
+                <tr><td>Physics</td><td>RCSJ model, time-domain SPICE solver</td></tr>
+                <tr><td>Layout</td><td>Placement & parasitic extraction</td></tr>
+                <tr><td>Metrics</td><td>Timing, BER & power analysis</td></tr>
+            </tbody>
+        </table>
+        <br>
+        <div class="section-title">Quick Start</div>
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Go to <strong>Design</strong> to enter a Verilog design or place cells</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Click <strong>Simulate</strong> to run a transient simulation</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">View <strong>Waveforms</strong>, <strong>Clock Phases</strong>, and <strong>Bias Margins</strong></div></div>
+        <div class="step-row"><div class="step-num">4</div><div class="step-text">Generate <strong>Reports</strong> for timing, BER, and power</div></div>
+        <br>
+        <div class="section-title">RQL Cell Library</div>
+        <p style="color:var(--text-secondary);font-size:0.88rem;line-height:1.7;margin-bottom:1.25rem;">
+            Each cell is a pre-characterised RQL logic element built from Josephson junctions, inductors, and capacitors.
+        </p>
+        <div class="cell-grid">${cellCards}</div>
+        <div class="app-footer">
+            <span class="footer-brand">RQL Logic Gate Simulator</span> · v2.0 ·
+            Reciprocal Quantum Logic · RCSJ Physics Engine<br>
+            <span style="font-size:0.72rem;margin-top:0.5rem;display:inline-block;">
+                Developed by <a href="https://esrpo.com" style="color:var(--primary-light);text-decoration:none;">EchoSpark</a>
+            </span>
+        </div>
+    `;
+}
+
+// ── DESIGN ──
+function renderDesign() {
+    const placedHTML = appState.designCells.length ?
+        appState.designCells.map((c, i) => `<span class="placed-cell">${i}: ${c.type} @ (${c.x.toFixed(0)}, ${c.y.toFixed(0)})</span>`).join('') :
+        '<div style="text-align:center;padding:2rem;background:var(--bg-secondary);border:1px dashed var(--border);border-radius:16px;color:#71717a;">Add cells above to build a design</div>';
+
+    const summaryHTML = appState.flat ? `
+        <div class="summary-grid">
+            <div class="glass-card"><div class="card-title">Netlist Summary</div><pre class="summary-pre">Netlist: ${appState.netlist.name}\n  Top ports:  ${appState.netlist.nPorts}\n  Nets:       ${appState.netlist.nNets}\n  Instances:  ${appState.netlist.instances.length}\n  Cell types: ${JSON.stringify(appState.netlist.instances.reduce((a,c) => { a[c.type]=(a[c.type]||0)+1; return a; }, {}))}</pre></div>
+            <div class="accent-card"><div class="card-title">Flat Circuit Summary</div><pre class="summary-pre">Circuit: ${appState.flat.name}\n  Nodes:      ${appState.flat.nodes.length} (+GND)\n  Junctions:  ${appState.flat.junctions.length}\n  Inductors:  ${appState.flat.inductors.length}\n  Sources:    ${appState.flat.sources.length}</pre></div>
+        </div>
+        <div class="alert alert-success">Compiled successfully.</div>
+    ` : '';
+
+    return `
+        <div class="badge">Design Entry</div>
+        <div class="section-title">Design Entry</div>
+        <div class="subtitle-text">Translate your digital logic into the RQL domain — map Verilog gates to Josephson junction circuits.</div>
+        <div class="glass-card">
+            <div class="card-title">Why Design Entry Matters</div>
+            <div class="card-body">
+                Conventional Verilog gates (AND, OR, NOT, XOR) are mapped to their RQL equivalents —
+                circuits built from Josephson junctions that process SFQ pulses instead of voltage levels.
+                <br><br><strong>Key insight:</strong> Watch the junction count after compilation.
+                Each JJ adds ~5 nW of dynamic power and occupies ~10×10 µm².
+            </div>
+        </div>
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchDesignTab('verilog',this)">Verilog Input</button>
+            <button class="tab-btn" onclick="switchDesignTab('canvas',this)">Schematic Canvas</button>
+        </div>
+        <div class="tab-panel active" id="designTabVerilog">
+            <div class="section-title" style="font-size:1.2rem;">Enter Verilog Source</div>
+            <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:1rem;">
+                Supports structural Verilog with gate primitives and continuous assignments.
+            </p>
+            <textarea class="code-editor" id="verilogEditor">${appState.verilogSource}</textarea>
+            <br><br>
+            <button class="btn-primary" id="compileVerilogBtn">Compile Verilog</button>
+        </div>
+        <div class="tab-panel" id="designTabCanvas">
+            <div class="section-title" style="font-size:1.2rem;">Schematic Canvas</div>
+            <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:1rem;">
+                Place RQL cells manually — cells auto-chain in sequence.
+            </p>
+            <div style="display:flex;gap:1rem;align-items:end;margin-bottom:1rem;">
+                <div class="form-group" style="flex:2">
+                    <label class="form-label">Cell type</label>
+                    <select class="form-select" id="canvasCellType">
+                        ${Object.keys(CELL_LIBRARY).map(c => `<option value="${c}">${c}</option>`).join('')}
+                    </select>
+                </div>
+                <button class="btn-secondary" id="addCellBtn">Add Cell</button>
+            </div>
+            <div class="placed-cells" id="placedCellsDisplay">${placedHTML}</div>
+            <br>
+            <div style="display:flex;gap:1rem;">
+                <button class="btn-primary" id="compileCanvasBtn">Compile Canvas Design</button>
+                <button class="btn-secondary" id="clearCanvasBtn">Clear Canvas</button>
+            </div>
+        </div>
+        <div id="designSummary">${summaryHTML}</div>
+    `;
+}
+
+function switchDesignTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('designTabVerilog').classList.toggle('active', tab === 'verilog');
+    document.getElementById('designTabCanvas').classList.toggle('active', tab === 'canvas');
+}
+
+function setupDesignEvents() {
+    const compBtn = document.getElementById('compileVerilogBtn');
+    if (compBtn) compBtn.onclick = () => {
+        if (!tryCompile()) return;
+        const p = getParams();
+        const src = document.getElementById('verilogEditor').value;
+        appState.verilogSource = src;
+        showSpinner('Compiling Verilog…');
+        setTimeout(() => {
+            try {
+                const modules = parseVerilog(src);
+                if (!modules.length) throw new Error('No modules found in Verilog source');
+                const result = mapAndCompile(modules[0], p.clockFreq, p.biasRatio, p.nPhases);
+                appState.netlist = result.netlist;
+                appState.flat = result.flat;
+                appState.simResult = null;
+                hideSpinner();
+                renderPage('Design');
+            } catch (e) {
+                hideSpinner();
+                alert('Compilation error: ' + e.message);
+            }
+        }, 400);
+    };
+
+    const addBtn = document.getElementById('addCellBtn');
+    if (addBtn) addBtn.onclick = () => {
+        const ct = document.getElementById('canvasCellType').value;
+        const n = appState.designCells.length;
+        appState.designCells.push({ type: ct, x: (n % 6) * 30, y: Math.floor(n / 6) * 10 });
+        renderPage('Design');
+    };
+
+    const compCanvasBtn = document.getElementById('compileCanvasBtn');
+    if (compCanvasBtn) compCanvasBtn.onclick = () => {
+        if (!tryCompile()) return;
+        if (!appState.designCells.length) { alert('No cells placed.'); return; }
+        const p = getParams();
+        showSpinner('Compiling canvas design…');
+        setTimeout(() => {
+            try {
+                // Build a pseudo-module from canvas cells
+                const pMod = { name: 'canvas_design', ports: { input: 'input', output: 'output' }, wires: [], assigns: [], instances: [] };
+                let prevNet = 'input';
+                appState.designCells.forEach((c, i) => {
+                    const cell = CELL_LIBRARY[c.type];
+                    const inPorts = cell.ports.filter(p => p.d === 'input');
+                    const outPorts = cell.ports.filter(p => p.d === 'output');
+                    const pm = {};
+                    if (inPorts.length) pm[inPorts[0].n] = prevNet;
+                    if (inPorts.length > 1) pm[inPorts[1].n] = prevNet;
+                    const outNet = i < appState.designCells.length - 1 ? `n${i}` : 'output';
+                    if (outPorts.length) pm[outPorts[0].n] = outNet;
+                    pMod.instances.push({ type: c.type, name: `${c.type.toLowerCase()}_${i}`, portMap: pm });
+                    prevNet = outNet;
+                });
+                const result = mapAndCompile(pMod, p.clockFreq, p.biasRatio, p.nPhases);
+                appState.netlist = result.netlist;
+                appState.flat = result.flat;
+                appState.simResult = null;
+                hideSpinner();
+                renderPage('Design');
+            } catch (e) {
+                hideSpinner();
+                alert('Error: ' + e.message);
+            }
+        }, 400);
+    };
+
+    const clearBtn = document.getElementById('clearCanvasBtn');
+    if (clearBtn) clearBtn.onclick = () => { appState.designCells = []; renderPage('Design'); };
+}
+
+// ── SIMULATE ──
+function renderSimulate() {
+    if (!appState.flat) {
+        return `<div class="badge">Transient Simulation</div><div class="section-title">Transient Simulation</div>
+            <div class="alert alert-warning">No compiled design. Go to the <strong>Design</strong> page first.</div>`;
+    }
+
+    const inputNodes = appState.flat.nodes.filter(n => /in|_a|_b|_d/i.test(n)).slice(0, 10);
+    const nodeOpts = (inputNodes.length ? inputNodes : appState.flat.nodes.slice(0, 5))
+        .map(n => `<option value="${n}">${n}</option>`).join('');
+
+    const resultHTML = appState.simResult ? `
+        <br><div class="section-title" style="font-size:1.2rem;">Simulation Results</div>
+        <div class="metrics-row">
+            <div class="metric-box"><div class="metric-label">Time Points</div><div class="metric-value">${appState.simResult.nSteps.toLocaleString()}</div></div>
+            <div class="metric-box"><div class="metric-label">Switch Events</div><div class="metric-value">${appState.simResult.totalEvents}</div></div>
+            <div class="metric-box"><div class="metric-label">Wall Time</div><div class="metric-value">${(appState.simResult.wallTime || 0).toFixed(2)} s</div></div>
+        </div>
+        <div class="alert alert-success">Simulation complete.</div>
+    ` : '';
+
+    return `
+        <div class="badge">Transient Simulation</div>
+        <div class="section-title">Transient Simulation</div>
+        <div class="subtitle-text">Solve the RCSJ differential equations for every Josephson junction and verify logic operation.</div>
+        <div class="accent-card">
+            <div class="card-title">The Heart of RQL Verification</div>
+            <div class="card-body">
+                Each junction obeys: <strong>C·(dV/dt) + V/R + Ic·sin(φ) = I_bias(t)</strong>
+                where φ is the junction phase (dφ/dt = 2πV/Φ₀). A switching event occurs when φ advances by 2π.
+            </div>
+        </div>
+        <div class="section-title" style="font-size:1.2rem;">Solver Configuration</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Time step (ps)</label>
+                <input type="number" class="form-input" id="simDt" value="0.1" min="0.01" max="10" step="0.01">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Duration (ps)</label>
+                <input type="number" class="form-input" id="simDuration" value="2000" min="100" max="10000" step="100">
+            </div>
+            <div class="form-group">
+                <label class="form-label">&nbsp;</label>
+                <label class="form-checkbox"><input type="checkbox" id="simNoise"> Enable thermal noise</label>
+            </div>
+        </div>
+        <br>
+        <div class="section-title" style="font-size:1.2rem;">Input Stimuli</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Input node</label>
+                <select class="form-select" id="stimNode">${nodeOpts}</select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Pulse time (ps)</label>
+                <input type="number" class="form-input" id="stimTime" value="25" min="1" max="5000" step="1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Amplitude (µA)</label>
+                <input type="number" class="form-input" id="stimAmp" value="500" min="10" max="2000" step="10">
+            </div>
+        </div>
+        <br>
+        <button class="btn-primary" id="runSimBtn">Run Simulation</button>
+        ${resultHTML}
+    `;
+}
+
+function setupSimulateEvents() {
+    const btn = document.getElementById('runSimBtn');
+    if (btn) btn.onclick = () => {
+        const p = getParams();
+        const dtPs = parseFloat(document.getElementById('simDt').value);
+        const durPs = parseFloat(document.getElementById('simDuration').value);
+        const noiseOn = document.getElementById('simNoise').checked;
+        const stimNode = document.getElementById('stimNode').value;
+        const stimTime = parseFloat(document.getElementById('stimTime').value);
+        const stimAmp = parseFloat(document.getElementById('stimAmp').value);
+
+        // Add stimulus source
+        appState.flat.sources = appState.flat.sources.filter(s => !s.name.startsWith('stim_'));
+        appState.flat.sources.push({
+            name: `stim_${stimNode}`,
+            np: stimNode, nm: 'GND',
+            waveform: 'pulse',
+            amplitude: stimAmp * 1e-6,
+            pulseTime: stimTime * 1e-12,
+            pulseWidth: 2e-12,
+        });
+
+        showSpinner('Running transient simulation…');
+        setTimeout(() => {
+            const t0 = performance.now();
+            appState.simResult = runSimulation(appState.flat, dtPs, durPs, p.temperature, noiseOn);
+            appState.simResult.wallTime = (performance.now() - t0) / 1000;
+            hideSpinner();
+            renderPage('Simulate');
+        }, 100);
+    };
+}
+
+// ── WAVEFORMS ──
+function renderWaveforms() {
+    if (!appState.simResult) {
+        return `<div class="badge">Waveform Viewer</div><div class="section-title">Waveform Viewer</div>
+            <div class="alert alert-warning">No simulation data. Run a simulation first.</div>`;
+    }
+    return `
+        <div class="badge">Waveform Viewer</div>
+        <div class="section-title">Waveform Viewer</div>
+        <div class="subtitle-text">Inspect SFQ pulses, junction phases, and bias currents.</div>
+        <div class="glass-card">
+            <div class="card-title">Reading RQL Waveforms</div>
+            <div class="card-body">
+                <strong>Voltages:</strong> Sharp spikes = switching events. AC oscillation = clock bias.<br>
+                <strong>Phases:</strong> Each 2π step = one SFQ pulse. Should increase monotonically.
+            </div>
+        </div>
+        <div class="section-title" style="font-size:1.2rem;">Junction Voltages</div>
+        <div class="chart-container"><canvas id="chartJJVolt"></canvas></div>
+        <div class="section-title" style="font-size:1.2rem;">Junction Phases</div>
+        <div class="chart-container"><canvas id="chartJJPhase"></canvas></div>
+        <div class="section-title" style="font-size:1.2rem;">Node Voltages</div>
+        <div class="chart-container"><canvas id="chartNodeVolt"></canvas></div>
+        <div class="app-footer"><span class="footer-brand">RQL Logic Gate Simulator</span> · v2.0</div>
+    `;
+}
+
+function setupWaveformCharts() {
+    if (!appState.simResult) return;
+    const r = appState.simResult;
+    const tPs = Array.from(r.time).map(t => t * 1e12);
+
+    // Junction voltages (first 6)
+    const jjVDS = r.jjVoltages.slice(0, 6).map(jj => ({
+        x: tPs, y: Array.from(jj.data).map(v => v * 1e3), label: jj.name
+    }));
+    if (jjVDS.length) drawLineChart('chartJJVolt', jjVDS, 'Time (ps)', 'Voltage (mV)', 'Junction Voltages');
+
+    // Junction phases (first 6)
+    const jjPDS = r.jjPhases.slice(0, 6).map(jj => ({
+        x: tPs, y: Array.from(jj.data).map(v => v / TWO_PI), label: jj.name
+    }));
+    if (jjPDS.length) drawLineChart('chartJJPhase', jjPDS, 'Time (ps)', 'Phase (×2π)', 'Junction Phases');
+
+    // Node voltages (first 6)
+    const nVDS = r.nodeVoltages.slice(0, 6).map(n => ({
+        x: tPs, y: Array.from(n.data).map(v => v * 1e3), label: n.name
+    }));
+    if (nVDS.length) drawLineChart('chartNodeVolt', nVDS, 'Time (ps)', 'Voltage (mV)', 'Node Voltages');
+}
+
+// ── CLOCK PHASES ──
+function renderClockPhases() {
+    if (!appState.netlist) {
+        return `<div class="badge">Clock Phase Visualiser</div><div class="section-title">Clock Phase Visualiser</div>
+            <div class="alert alert-warning">No netlist. Compile a design first.</div>`;
+    }
+    const phaseTable = appState.netlist.instances.map(inst =>
+        `<tr><td>${inst.name}</td><td>${inst.type}</td><td>${inst.clockPhase}°</td></tr>`
+    ).join('');
+    return `
+        <div class="badge">Clock Phase Visualiser</div>
+        <div class="section-title">Clock Phase Visualiser</div>
+        <div class="subtitle-text">Explore the multi-phase AC clock that makes RQL fundamentally different.</div>
+        <div class="accent-card">
+            <div class="card-title">The RQL Clock Advantage</div>
+            <div class="card-body">
+                <strong>Zero static power</strong> — energy dissipated only during switching.
+                <strong>Natural pipelining</strong> — each phase defines a stage.
+            </div>
+        </div>
+        <div class="section-title" style="font-size:1.2rem;">Phase Assignment</div>
+        <table class="data-table">
+            <thead><tr><th>Instance</th><th>Cell Type</th><th>Clock Phase</th></tr></thead>
+            <tbody>${phaseTable}</tbody>
+        </table>
+        <div class="section-title" style="font-size:1.2rem;">Clock Waveforms</div>
+        <div class="chart-container"><canvas id="chartClock"></canvas></div>
+        <div class="app-footer"><span class="footer-brand">RQL Logic Gate Simulator</span> · v2.0</div>
+    `;
+}
+
+function setupClockCharts() {
+    if (!appState.netlist) return;
+    const p = getParams();
+    const freq = p.clockFreq * 1e9;
+    const period = 1 / freq;
+    const nCyc = 3;
+    const tEnd = period * nCyc;
+    const nPts = 500;
+    const tArr = [];
+    for (let i = 0; i <= nPts; i++) tArr.push(i * tEnd / nPts);
+    const tPs = tArr.map(t => t * 1e12);
+
+    const datasets = [];
+    for (let ph = 0; ph < p.nPhases; ph++) {
+        const offset = (ph * 360 / p.nPhases) * Math.PI / 180;
+        const yArr = tArr.map(t => Math.sin(TWO_PI * freq * t + offset));
+        datasets.push({ x: tPs, y: yArr, label: `Phase ${ph * (360/p.nPhases)}°` });
+    }
+    drawLineChart('chartClock', datasets, 'Time (ps)', 'Amplitude', 'AC Clock Phases');
+}
+
+// ── BIAS MARGINS ──
+function renderBiasMargins() {
+    if (!appState.flat) {
+        return `<div class="badge">Bias Margin Heatmap</div><div class="section-title">Bias Margin Heatmap</div>
+            <div class="alert alert-warning">No design compiled. Go to the Design page first.</div>`;
+    }
+    const p = getParams();
+    const rows = appState.flat.junctions.map(jj => {
+        const Inom = jj.Ic * p.biasRatio;
+        let lower = 25, upper = 25;
+        for (let d = 0; d < 0.5; d += 0.01) {
+            const b = berPerClock(jj.Ic, jj.R, jj.C, jj.Ic * (p.biasRatio - d), p.clockFreq * 1e9, p.temperature);
+            if (b > 1e-9) { lower = (d * 100 / p.biasRatio); break; }
+        }
+        for (let d = 0; d < 0.5; d += 0.01) {
+            const b = berPerClock(jj.Ic, jj.R, jj.C, jj.Ic * (p.biasRatio + d), p.clockFreq * 1e9, p.temperature);
+            if (b > 1e-9) { upper = (d * 100 / p.biasRatio); break; }
+        }
+        const total = lower + upper;
+        const color = total > 40 ? '#22c55e' : total > 20 ? '#eab308' : '#ef4444';
+        return `<tr><td>${jj.name}</td><td>${lower.toFixed(1)}%</td><td>${upper.toFixed(1)}%</td>
+                <td style="color:${color};font-weight:700;">${total.toFixed(1)}%</td></tr>`;
+    }).join('');
+
+    return `
+        <div class="badge">Bias Margin Heatmap</div>
+        <div class="section-title">Bias Margin Heatmap</div>
+        <div class="subtitle-text">The #1 yield predictor for RQL chips — how much can bias deviate before failure?</div>
+        <div class="glass-card">
+            <div class="card-title">Understanding Bias Margins</div>
+            <div class="card-body">
+                <strong style="color:#22c55e;">Green (> 40%)</strong> — Robust
+                &nbsp; <strong style="color:#eab308;">Yellow (20–40%)</strong> — Marginal
+                &nbsp; <strong style="color:#ef4444;">Red (< 20%)</strong> — Critical
+            </div>
+        </div>
+        <div class="section-title" style="font-size:1.2rem;">Per-Junction Margins</div>
+        <table class="data-table">
+            <thead><tr><th>Junction</th><th>Lower (%)</th><th>Upper (%)</th><th>Total (%)</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="section-title" style="font-size:1.2rem;">BER vs Bias Ratio</div>
+        <div class="chart-container"><canvas id="chartBER"></canvas></div>
+        <div class="app-footer"><span class="footer-brand">RQL Logic Gate Simulator</span> · v2.0</div>
+    `;
+}
+
+function setupBiasCharts() {
+    if (!appState.flat || !appState.flat.junctions.length) return;
+    const p = getParams();
+    const jj = appState.flat.junctions[0];
+    const ratios = [];
+    const bers = [];
+    for (let r = 0.30; r <= 0.95; r += 0.005) {
+        ratios.push(r);
+        const b = berPerClock(jj.Ic, jj.R, jj.C, jj.Ic * r, p.clockFreq * 1e9, p.temperature);
+        bers.push(Math.log10(b + 1e-50));
+    }
+    drawLineChart('chartBER', [{x: ratios, y: bers, label: jj.name}],
+        'Bias ratio (Ibias/Ic)', 'log₁₀(BER)', `BER vs Bias — ${jj.name}`);
+}
+
+// ── REPORTS ──
+function renderReports() {
+    if (!appState.simResult || !appState.flat) {
+        return `<div class="badge">Analysis Reports</div><div class="section-title">Analysis Reports</div>
+            <div class="alert alert-warning">Run a simulation first.</div>`;
+    }
+    const p = getParams();
+    const clockPeriod = 1e12 / (p.clockFreq * 1e9);
+    const phaseWindow = clockPeriod / (2 * p.nPhases);
+
+    // Timing
+    const timingHTML = `
+        <div class="metrics-row">
+            <div class="metric-box"><div class="metric-label">Clock Period</div><div class="metric-value">${clockPeriod.toFixed(1)} ps</div></div>
+            <div class="metric-box"><div class="metric-label">Phase Window</div><div class="metric-value">${phaseWindow.toFixed(1)} ps</div></div>
+            <div class="metric-box"><div class="metric-label">Switching Events</div><div class="metric-value">${appState.simResult.totalEvents}</div></div>
+        </div>
+    `;
+
+    // BER
+    const berRows = appState.flat.junctions.map(jj => {
+        const Ibias = jj.Ic * p.biasRatio;
+        const b = berPerClock(jj.Ic, jj.R, jj.C, Ibias, p.clockFreq * 1e9, p.temperature);
+        const barrier = barrierHeight(jj.Ic, Ibias);
+        return `<tr><td>${jj.name}</td><td>${(jj.Ic*1e6).toFixed(1)}</td><td>${b.toExponential(2)}</td><td>${(barrier/1.6e-19).toFixed(4)}</td></tr>`;
+    }).join('');
+
+    // Power
+    const nJJ = appState.flat.junctions.length;
+    const totalSwitch = appState.simResult.totalEvents;
+    const EPerSwitch = PHI_0 * DEFAULT_IC;
+    const switchPower = totalSwitch * EPerSwitch / (appState.simResult.metadata.tEnd) * 1e9;
+    const energyPerOp = totalSwitch > 0 ? (EPerSwitch * 1e18) : 0;
+
+    return `
+        <div class="badge">Analysis Reports</div>
+        <div class="section-title">Analysis Reports</div>
+        <div class="subtitle-text">Accept/reject metrics for tape-out — timing, BER, and power.</div>
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchReportTab('timing',this)">Timing</button>
+            <button class="tab-btn" onclick="switchReportTab('ber',this)">BER</button>
+            <button class="tab-btn" onclick="switchReportTab('power',this)">Power</button>
+        </div>
+        <div class="tab-panel active" id="reportTiming">
+            <div class="section-title" style="font-size:1.2rem;">Timing Analysis</div>
+            ${timingHTML}
+        </div>
+        <div class="tab-panel" id="reportBER">
+            <div class="section-title" style="font-size:1.2rem;">BER Prediction</div>
+            <table class="data-table">
+                <thead><tr><th>Junction</th><th>Ic (µA)</th><th>BER/clk</th><th>Barrier (eV)</th></tr></thead>
+                <tbody>${berRows}</tbody>
+            </table>
+        </div>
+        <div class="tab-panel" id="reportPower">
+            <div class="section-title" style="font-size:1.2rem;">Power Analysis</div>
+            <div class="metrics-row">
+                <div class="metric-box"><div class="metric-label">Total Power</div><div class="metric-value">${switchPower.toFixed(3)} nW</div></div>
+                <div class="metric-box"><div class="metric-label">Junctions</div><div class="metric-value">${nJJ}</div></div>
+                <div class="metric-box"><div class="metric-label">Energy/op</div><div class="metric-value">${energyPerOp.toFixed(2)} aJ</div></div>
+            </div>
+            <div class="glass-card">
+                <div class="card-title">RQL Power Advantage</div>
+                <div class="card-body">
+                    <strong>RSFQ</strong>: ~125 nW/JJ (DC bias resistors, always on).<br>
+                    <strong>RQL</strong>: Sub-nW/JJ — AC resonant clock with zero static power.
+                    Approaching the Landauer limit of kT·ln 2 ≈ 0.017 aJ at 4.2 K.
+                </div>
+            </div>
+        </div>
+        <div class="app-footer"><span class="footer-brand">RQL Logic Gate Simulator</span> · v2.0 ·
+            Developed by <a href="https://esrpo.com" style="color:var(--primary-light);text-decoration:none;">EchoSpark</a>
+        </div>
+    `;
+}
+
+function switchReportTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('reportTiming').classList.toggle('active', tab === 'timing');
+    document.getElementById('reportBER').classList.toggle('active', tab === 'ber');
+    document.getElementById('reportPower').classList.toggle('active', tab === 'power');
+}
+
+function setupReportCharts() {}
+
+// ====================================================================
+//  AUTO-LOGIN ON PAGE LOAD
+// ====================================================================
+(function() {
+    const hash = getActiveCode();
+    if (hash && (_$c.includes(hash) || hash === _$m) && getRemainingCompilations(hash) > 0) {
+        showApp();
+    }
+})();
+</script>
+</body>
+</html>
