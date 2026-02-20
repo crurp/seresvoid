@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RQL Simulator — EchoSpark</title>
+    <title>RQL Simulator | EchoSpark</title>
     <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1324,7 +1324,7 @@ const PARASITIC_R = 5000.0;
 // ====================================================================
 const CELL_LIBRARY = {
     JTL: {
-        desc: 'Josephson Transmission Line — single buffer stage',
+        desc: 'Josephson Transmission Line: single buffer stage',
         ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
@@ -1332,7 +1332,7 @@ const CELL_LIBRARY = {
         portMap: {in:'pin_in', out:'pin_out'},
     },
     SPLITTER: {
-        desc: 'Fan-out splitter — 1 input to 2 outputs',
+        desc: 'Fan-out splitter: 1 input to 2 outputs',
         ports: [{n:'in',d:'input'},{n:'out1',d:'output'},{n:'out2',d:'output'}],
         junctions: [{name:'JJ1',np:'n2',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n3',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'L1',np:'n1',nm:'n2',L:1.5e-12},{name:'L2',np:'n1',nm:'n3',L:1.5e-12},{name:'Lout1',np:'n2',nm:'pin_out1',L:2e-12},{name:'Lout2',np:'n3',nm:'pin_out2',L:2e-12}],
@@ -1340,7 +1340,7 @@ const CELL_LIBRARY = {
         portMap: {in:'pin_in', out1:'pin_out1', out2:'pin_out2'},
     },
     MERGER: {
-        desc: 'Confluence buffer — OR-like merger',
+        desc: 'Confluence buffer, OR-like merger',
         ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*0.85}],
         inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2.5e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2.5e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
@@ -1348,7 +1348,7 @@ const CELL_LIBRARY = {
         portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
     },
     AND: {
-        desc: 'RQL AND gate — both inputs needed',
+        desc: 'RQL AND gate: both inputs needed',
         ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*1.4}],
         inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2e-12},{name:'Lout',np:'n1',nm:'pin_out',L:2e-12}],
@@ -1356,7 +1356,7 @@ const CELL_LIBRARY = {
         portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
     },
     OR: {
-        desc: 'RQL OR gate — either input sufficient',
+        desc: 'RQL OR gate: either input sufficient',
         ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC*0.85},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2.5e-12},{name:'Lb',np:'pin_in2',nm:'n1',L:2.5e-12},{name:'Lm',np:'n1',nm:'n2',L:2e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
@@ -1364,7 +1364,7 @@ const CELL_LIBRARY = {
         portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
     },
     XOR: {
-        desc: 'RQL XOR gate — balanced comparator',
+        desc: 'RQL XOR gate, balanced comparator',
         ports: [{n:'in1',d:'input'},{n:'in2',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'La',np:'pin_in1',nm:'n1',L:2e-12},{name:'Lm',np:'n1',nm:'n2',L:3e-12},{name:'Lb',np:'pin_in2',nm:'n2',L:2e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
@@ -1372,7 +1372,7 @@ const CELL_LIBRARY = {
         portMap: {in1:'pin_in1', in2:'pin_in2', out:'pin_out'},
     },
     NOT: {
-        desc: 'RQL inverter — complement via clock-phase inversion',
+        desc: 'RQL inverter: complement via clock-phase inversion',
         ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lm',np:'n1',nm:'n2',L:3e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
@@ -1380,7 +1380,7 @@ const CELL_LIBRARY = {
         portMap: {in:'pin_in', out:'pin_out'},
     },
     DFF: {
-        desc: 'D flip-flop — single-phase pipeline register',
+        desc: 'D flip-flop: single-phase pipeline register',
         ports: [{n:'in',d:'input'},{n:'out',d:'output'}],
         junctions: [{name:'JJ1',np:'n1',nm:'GND',Ic:DEFAULT_IC},{name:'JJ2',np:'n2',nm:'GND',Ic:DEFAULT_IC}],
         inductors: [{name:'Lin',np:'pin_in',nm:'n1',L:2e-12},{name:'Lstore',np:'n1',nm:'n2',L:5e-12},{name:'Lout',np:'n2',nm:'pin_out',L:2e-12}],
@@ -2379,7 +2379,7 @@ const ARCH_DATA = [
       detail: 'Accept/reject metrics for tape-out: timing margins, bit error rate from thermal noise, and power dissipation vs. cryocooler budget.' },
 ];
 const CELL_PHYSICS = {
-    JTL: 'Josephson Transmission Line — propagates an SFQ pulse through a chain of JJ-inductor stages. Each JJ regenerates the pulse.',
+    JTL: 'Josephson Transmission Line: propagates an SFQ pulse through a chain of JJ-inductor stages. Each JJ regenerates the pulse.',
     SPLITTER: 'Duplicates one SFQ pulse into two copies. Essential because JJ circuits have no inherent fan-out.',
     MERGER: 'Combines two SFQ input lines into one. Fires if either input receives a pulse.',
     AND: 'Outputs an SFQ pulse only when both inputs fire within the same clock phase.',
@@ -2406,7 +2406,7 @@ function renderHome() {
     ).join('');
     const archExpanders = ARCH_DATA.map(a =>
         `<div style="margin-bottom:0.5rem;">
-            <div class="expander-toggle" data-target="archDetail_${a.layer}" style="cursor:pointer;font-size:0.88rem;color:var(--primary-light);font-weight:500;padding:0.5rem 0;">▶ ${a.layer} — why it matters</div>
+            <div class="expander-toggle" data-target="archDetail_${a.layer}" style="cursor:pointer;font-size:0.88rem;color:var(--primary-light);font-weight:500;padding:0.5rem 0;">▶ ${a.layer}: why it matters</div>
             <div id="archDetail_${a.layer}" style="display:none;font-size:0.85rem;color:#a1a1aa;line-height:1.65;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;">${a.detail}</div>
         </div>`
     ).join('');
@@ -2415,13 +2415,13 @@ function renderHome() {
         <div class="hero-title">RQL Logic Gate Simulator</div>
         <div class="subtitle-text">
             A <strong style="color:white">physically accurate</strong> simulator for Reciprocal Quantum Logic
-            superconducting circuits — from Verilog design to fluxon-level transient analysis.
+            superconducting circuits, covering everything from Verilog design to fluxon-level transient analysis.
         </div>
         <div class="glass-card">
             <div class="card-title">What is Reciprocal Quantum Logic?</div>
             <div class="card-body">
                 RQL is a superconducting digital logic family that encodes information as the
-                <em>presence</em> or <em>absence</em> of single flux quantum (SFQ) pulses — quantised
+                <em>presence</em> or <em>absence</em> of single flux quantum (SFQ) pulses, which are quantised
                 voltage spikes of area Φ₀ = h/2e ≈ 2.07 mV·ps. Unlike RSFQ, RQL uses AC power
                 delivery through a resonant clock network, eliminating DC bias resistors and achieving
                 orders-of-magnitude lower power dissipation. RQL circuits operate at cryogenic
@@ -2516,11 +2516,11 @@ function renderDesign() {
     return `
         <div class="badge">Design Entry</div>
         <div class="section-title">Design Entry</div>
-        <div class="subtitle-text">Translate your digital logic into the RQL domain — map Verilog gates to Josephson junction circuits.</div>
+        <div class="subtitle-text">Translate your digital logic into the RQL domain by mapping Verilog gates to Josephson junction circuits.</div>
         <div class="glass-card">
             <div class="card-title">Why Design Entry Matters</div>
             <div class="card-body">
-                Conventional Verilog gates (AND, OR, NOT, XOR) are mapped to their RQL equivalents —
+                Conventional Verilog gates (AND, OR, NOT, XOR) are mapped to their RQL equivalents:
                 circuits built from Josephson junctions that process SFQ pulses instead of voltage levels.
                 <br><br><strong>Key insight:</strong> Watch the junction count after compilation.
                 Each JJ adds ~5 nW of dynamic power and occupies ~10×10 µm².
@@ -2542,7 +2542,7 @@ function renderDesign() {
         <div class="tab-panel" id="designTabCanvas">
             <div class="section-title" style="font-size:1.2rem;">Schematic Canvas</div>
             <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:1rem;">
-                Place RQL cells manually — cells auto-chain in sequence.
+                Place RQL cells manually; they auto-chain in sequence.
             </p>
             <div style="display:flex;gap:1rem;align-items:end;margin-bottom:1rem;">
                 <div class="form-group" style="flex:2">
@@ -2771,15 +2771,15 @@ function renderWaveforms() {
     return `
         <div class="badge">Waveform Viewer</div>
         <div class="section-title">Waveform Viewer</div>
-        <div class="subtitle-text">Inspect SFQ pulses, junction phases, and bias currents — the primary diagnostic tool for RQL circuit verification.</div>
+        <div class="subtitle-text">Inspect SFQ pulses, junction phases, and bias currents, the primary diagnostic tool for RQL circuit verification.</div>
         <div class="glass-card">
             <div class="card-title">Reading RQL Waveforms</div>
             <div class="card-body">
-                Unlike CMOS (voltage levels), in RQL you look for <strong>SFQ pulses</strong> — sharp voltage spikes of area Φ₀ ≈ 2.07 mV·ps.
+                Unlike CMOS (voltage levels), in RQL you look for <strong>SFQ pulses</strong>: sharp voltage spikes of area Φ₀ ≈ 2.07 mV·ps.
                 <br><br>
                 <strong>Voltages:</strong> Sharp spikes = switching events. AC oscillation = clock bias (normal).
                 <br><strong>Phases:</strong> Each 2π step = one SFQ pulse. Should increase monotonically.
-                <br><strong>Flat voltage:</strong> Junction never switched — pulse didn't propagate.
+                <br><strong>Flat voltage:</strong> The junction never switched, so the pulse did not propagate.
             </div>
         </div>
         <div class="tab-bar" id="wfTabBar">
@@ -2804,7 +2804,7 @@ function renderWaveforms() {
             <div class="chart-container"><canvas id="chartWfPhase"></canvas></div>
         </div>
         <div class="tab-panel" id="wfSfq">
-            <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:0.5rem;">Detected switching events — 2π phase crossings.</p>
+            <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:0.5rem;">Detected switching events (2π phase crossings).</p>
             <div class="form-group" style="margin-bottom:1rem;max-width:400px;">
                 <label class="form-label">Junction for pulse view</label>
                 <select class="form-select" id="sfqJJSelect">${sfqOpts}</select>
@@ -2856,7 +2856,7 @@ function drawWfTab(tab) {
         const jj = r.jjVoltages[idx];
         if (jj) {
             const ds = [{ x: tPs, y: Array.from(jj.data).map(v => v * 1e3), label: jj.name }];
-            drawLineChart('chartWfSfq', ds, 'Time (ps)', 'Voltage (mV)', `SFQ Pulses — ${jj.name}`);
+            drawLineChart('chartWfSfq', ds, 'Time (ps)', 'Voltage (mV)', `SFQ Pulses: ${jj.name}`);
             const events = r.switchEvents[jj.name] || [];
             document.getElementById('sfqCount').innerHTML =
                 `<div style="display:inline-block;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:50px;padding:0.35rem 1rem;font-size:0.85rem;color:#818cf8;font-weight:600;">${events.length} SFQ pulses detected</div>
@@ -2897,9 +2897,9 @@ function renderClockPhases() {
         <div class="accent-card">
             <div class="card-title">The RQL Clock Advantage</div>
             <div class="card-body">
-                <strong>Zero static power</strong> — energy dissipated only during switching events.<br>
-                <strong>Natural pipelining</strong> — each phase defines a pipeline stage; data flows through like a bucket brigade.<br>
-                <strong>No DC bias</strong> — resonant AC clock eliminates the resistive bias network that dominates RSFQ power.
+                <strong>Zero static power:</strong> energy dissipated only during switching events.<br>
+                <strong>Natural pipelining:</strong> each phase defines a pipeline stage, and data flows through like a bucket brigade.<br>
+                <strong>No DC bias:</strong> the resonant AC clock eliminates the resistive bias network that dominates RSFQ power.
             </div>
         </div>
         <div class="tab-bar" id="cpTabBar">
@@ -2909,7 +2909,7 @@ function renderClockPhases() {
         </div>
         <div class="tab-panel active" id="cpAssign">
             <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:0.75rem;">
-                BFS-based clock phase assignment — cells are placed at pipeline depths from the input ports.
+                BFS-based clock phase assignment: cells are placed at pipeline depths from the input ports.
             </p>
             <div class="chart-container" style="max-width:420px;margin:0 auto 1.5rem auto;"><canvas id="chartPolar"></canvas></div>
             <table class="data-table">
@@ -2919,7 +2919,7 @@ function renderClockPhases() {
         </div>
         <div class="tab-panel" id="cpWaveforms">
             <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:0.75rem;">
-                AC sinusoidal bias signals — phases evenly offset by T/n_phases.
+                AC sinusoidal bias signals with phases evenly offset by T/n_phases.
                 ${p.nPhases}-phase clock at ${p.clockFreq} GHz. Each phase offset = ${(360 / p.nPhases).toFixed(0)}°.
             </p>
             <div class="form-group" style="max-width:250px;margin-bottom:1rem;">
@@ -3104,13 +3104,13 @@ function renderBiasMargins() {
     return `
         <div class="badge">Bias Margin Heatmap</div>
         <div class="section-title">Bias Margin Heatmap</div>
-        <div class="subtitle-text">The #1 yield predictor for RQL chips — how much can bias deviate before failure?</div>
+        <div class="subtitle-text">The #1 yield predictor for RQL chips: how much can bias deviate before failure?</div>
         <div class="glass-card">
             <div class="card-title">Understanding Bias Margins</div>
             <div class="card-body">
-                <strong style="color:#22c55e;">Green (&gt; 40%)</strong> — Robust
-                &nbsp; <strong style="color:#eab308;">Yellow (20–40%)</strong> — Marginal
-                &nbsp; <strong style="color:#ef4444;">Red (&lt; 20%)</strong> — Critical
+                <strong style="color:#22c55e;">Green (&gt; 40%):</strong> Robust
+                &nbsp; <strong style="color:#eab308;">Yellow (20–40%):</strong> Marginal
+                &nbsp; <strong style="color:#ef4444;">Red (&lt; 20%):</strong> Critical
             </div>
         </div>
         <div class="metrics-row">
@@ -3133,7 +3133,7 @@ function renderBiasMargins() {
             In CMOS, voltage margins are 30–50% of VDD. In RQL, the margin depends on the
             <em>energy barrier</em> of the Josephson junction's washboard potential. The barrier
             scales as Ic·Φ₀ ≈ 0.5×10⁻¹⁹ J (~300 kT at 4.2 K). As bias approaches Ic,
-            the barrier shrinks <em>exponentially</em> — this extreme sensitivity is why even small
+            the barrier shrinks <em>exponentially</em>, and this extreme sensitivity is why even small
             Ic variations can catastrophically degrade yield.
         </div>
         <div class="section-title" style="font-size:1.2rem;">BER vs Bias Ratio</div>
@@ -3182,7 +3182,7 @@ function drawBERCurve(jjIndex) {
         bers.push(Math.log10(b + 1e-50));
     }
     drawLineChart('chartBER', [{x: ratios, y: bers, label: jj.name}],
-        'Bias ratio (Ibias/Ic)', 'log₁₀(BER)', `BER vs Bias — ${jj.name}`, true);
+        'Bias ratio (Ibias/Ic)', 'log₁₀(BER)', `BER vs Bias: ${jj.name}`, true);
 }
 
 // ── REPORTS (enhanced: timing latency, BER with fill, full power, tape-out criteria) ──
@@ -3299,7 +3299,7 @@ function renderReports() {
     return `
         <div class="badge">Analysis Reports</div>
         <div class="section-title">Analysis Reports</div>
-        <div class="subtitle-text">Accept/reject metrics for tape-out — timing margins, BER, and power within cryocooler budget.</div>
+        <div class="subtitle-text">Accept/reject metrics for tape-out: timing margins, BER, and power within cryocooler budget.</div>
         <div class="accent-card" style="margin-bottom:1.5rem;">
             <div class="card-title">Tape-Out Criteria</div>
             <div class="card-body">
@@ -3308,7 +3308,7 @@ function renderReports() {
                 ~1 kW wall power per watt at 4 K).
                 <br><br>
                 <strong>RQL's advantage:</strong> Sub-nW power per junction, sub-aJ energy per
-                operation — 1000× better than RSFQ, 10⁶× better than CMOS.
+                operation, 1000× better than RSFQ and 10⁶× better than CMOS.
             </div>
         </div>
         <div class="tab-bar" id="rptTabBar">
@@ -3360,9 +3360,9 @@ function renderReports() {
             </table>
             <div class="expander-toggle" data-target="berExplain" style="cursor:pointer;margin-top:0.75rem;font-size:0.85rem;color:var(--primary-light);font-weight:500;">▶ Understanding the BER table</div>
             <div id="berExplain" style="display:none;margin-top:0.5rem;font-size:0.85rem;color:#a1a1aa;line-height:1.55;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;">
-                <strong>Ic</strong>: Critical current — higher → larger barrier → lower BER<br>
+                <strong>Ic</strong>: Critical current; higher values mean a larger barrier and lower BER<br>
                 <strong>BER/clk</strong>: Probability of thermal error per cycle. 10⁻²⁰ = one error every ~300 years at 20 GHz<br>
-                <strong>Barrier</strong>: Washboard potential height. At 4.2 K, kT ≈ 0.00036 eV; a barrier of 0.16 eV = ~450 kT — virtually impenetrable
+                <strong>Barrier</strong>: Washboard potential height. At 4.2 K, kT ≈ 0.00036 eV; a barrier of 0.16 eV = ~450 kT, which is virtually impenetrable
             </div>
             <div class="section-title" style="font-size:1.1rem;margin-top:1.5rem;">BER vs Bias Ratio</div>
             <p style="font-size:0.82rem;color:var(--text-tertiary);margin-bottom:0.5rem;">The steep cliff near Ibias/Ic ≈ 0.9–0.95 is where reliability collapses.</p>
@@ -3393,9 +3393,9 @@ function renderReports() {
                 <div class="card-title">RQL Power Advantage</div>
                 <div class="card-body">
                     <strong>RSFQ equivalent</strong>: ~${rsfqEquiv.toFixed(0)} nW (${nJJ} JJs × 125 nW/JJ with DC bias).<br>
-                    <strong>RQL actual</strong>: ${totalPower.toFixed(3)} nW — a <strong>${rsfqEquiv > 0 ? (rsfqEquiv / totalPower).toFixed(0) : '∞'}×</strong> reduction!<br><br>
+                    <strong>RQL actual</strong>: ${totalPower.toFixed(3)} nW, a <strong>${rsfqEquiv > 0 ? (rsfqEquiv / totalPower).toFixed(0) : '∞'}×</strong> reduction!<br><br>
                     <strong>Landauer limit</strong>: kT·ln 2 ≈ ${(1.38e-23 * p.temperature * Math.log(2) * 1e18).toFixed(4)} aJ at ${p.temperature} K.
-                    Your energy/switch: ${energyPerOp.toFixed(2)} aJ — ${energyPerOp > 0 ? (energyPerOp / (1.38e-23 * p.temperature * Math.log(2) * 1e18)).toFixed(0) : '∞'}× Landauer.
+                    Your energy/switch: ${energyPerOp.toFixed(2)} aJ (${energyPerOp > 0 ? (energyPerOp / (1.38e-23 * p.temperature * Math.log(2) * 1e18)).toFixed(0) : '∞'}× the Landauer limit).
                 </div>
             </div>
             <div class="expander-toggle" data-target="powerExplain" style="cursor:pointer;margin-top:0.75rem;font-size:0.85rem;color:var(--primary-light);font-weight:500;">▶ RQL power advantage explained</div>
@@ -3404,7 +3404,7 @@ function renderReports() {
                 <strong>RQL</strong>: AC resonant clock through lossless superconducting transformers.
                 Energy is exchanged between clock and junction kinetic inductance.
                 Real power only during switching: Ic × Φ₀ ≈ 0.5 aJ/event.<br><br>
-                This makes RQL the most power-efficient digital logic family — approaching
+                This makes RQL the most power-efficient digital logic family, approaching
                 the Landauer limit of kT·ln 2 ≈ 0.017 aJ at 4.2 K.
             </div>
             <div class="section-title" style="font-size:1.1rem;margin-top:1.5rem;">Power Breakdown Chart</div>
@@ -3438,7 +3438,7 @@ function drawReportTab(tab) {
             const b = berPerClock(jj.Ic, jj.R, jj.C, jj.Ic * p.biasRatio, p.clockFreq * 1e9, T);
             bers.push(Math.log10(b + 1e-50));
         }
-        drawLineChart('chartBERTemp', [{ x: temps, y: bers, label: `BER — ${jj.name}` }],
+        drawLineChart('chartBERTemp', [{ x: temps, y: bers, label: `BER: ${jj.name}` }],
             'Temperature (K)', 'log₁₀(BER)', 'BER vs Operating Temperature', true);
         // BER vs Bias chart
         drawRptBERBias(0);
@@ -3509,7 +3509,7 @@ function drawRptBERBias(jjIndex) {
         bers.push(Math.log10(b + 1e-50));
     }
     drawLineChart('chartRptBERBias', [{x: ratios, y: bers, label: jj.name}],
-        'Bias ratio (Ibias/Ic)', 'log₁₀(BER)', `BER vs Bias — ${jj.name}`, true);
+        'Bias ratio (Ibias/Ic)', 'log₁₀(BER)', `BER vs Bias: ${jj.name}`, true);
 }
 
 // ── UNDER THE HOOD ──
@@ -3522,9 +3522,9 @@ function renderUnderTheHood() {
             <br><br>
             <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:0.85rem;">I = Ic·sin(φ) + V/R + C·dV/dt</code>
             <br><br>
-            <strong>Supercurrent:</strong> Ic·sin(φ) — the dissipationless Cooper-pair tunneling current.<br>
-            <strong>Resistive:</strong> V/R — quasiparticle tunneling when voltage exceeds the gap.<br>
-            <strong>Capacitive:</strong> C·dV/dt — geometric capacitance of the junction barrier.<br><br>
+            <strong>Supercurrent:</strong> Ic·sin(φ), the dissipationless Cooper-pair tunneling current.<br>
+            <strong>Resistive:</strong> V/R, representing quasiparticle tunneling when voltage exceeds the gap.<br>
+            <strong>Capacitive:</strong> C·dV/dt, the geometric capacitance of the junction barrier.<br><br>
             The phase φ and voltage V are related by the Josephson relation: V = (Φ₀/2π)·dφ/dt.
             A switching event occurs when φ advances by 2π, creating a Single Flux Quantum (SFQ) pulse.`
         },
@@ -3533,8 +3533,8 @@ function renderUnderTheHood() {
             icon: '📊',
             body: `The simulator integrates the coupled ODEs for all junctions simultaneously using either:
             <br><br>
-            <strong>Euler-Maruyama method</strong> — fixed timestep with thermal noise (stochastic integration). Adds Johnson-Nyquist noise current: σ = √(2kT/R·Δt).<br><br>
-            <strong>SciPy adaptive solver</strong> — variable timestep (RK45/BDF) for noiseless, high-accuracy simulation.<br><br>
+            <strong>Euler-Maruyama method:</strong> fixed timestep with thermal noise (stochastic integration). Adds Johnson-Nyquist noise current: σ = √(2kT/R·Δt).<br><br>
+            <strong>SciPy adaptive solver:</strong> variable timestep (RK45/BDF) for noiseless, high-accuracy simulation.<br><br>
             The state vector contains 3 variables per junction (V, φ, and inductor current I_L), yielding a system of 3N coupled ODEs for N junctions.
             Typical timestep: 0.1 ps for 20 GHz clock.`
         },
@@ -3554,14 +3554,14 @@ function renderUnderTheHood() {
             icon: '🔧',
             body: `Standard RQL cells and their junction counts:
             <br><br>
-            <strong>JTL</strong> (1 JJ) — Josephson Transmission Line: propagates SFQ pulses.<br>
-            <strong>SPLITTER</strong> (2 JJ) — Duplicates a pulse onto two output lines.<br>
-            <strong>MERGER</strong> (2 JJ) — Combines two inputs (OR-type) into one output.<br>
-            <strong>AND</strong> (3 JJ) — Outputs pulse only when both inputs arrive within the clock window.<br>
-            <strong>OR</strong> (2 JJ) — Outputs pulse when either input arrives.<br>
-            <strong>XOR</strong> (4 JJ) — Outputs pulse when exactly one input arrives.<br>
-            <strong>NOT</strong> (2 JJ) — Inverts by subtracting from clock reference.<br>
-            <strong>DFF</strong> (2 JJ) — D Flip-Flop for pipeline synchronization.`
+            <strong>JTL</strong> (1 JJ): Josephson Transmission Line, propagates SFQ pulses.<br>
+            <strong>SPLITTER</strong> (2 JJ): Duplicates a pulse onto two output lines.<br>
+            <strong>MERGER</strong> (2 JJ): Combines two inputs (OR-type) into one output.<br>
+            <strong>AND</strong> (3 JJ): Outputs pulse only when both inputs arrive within the clock window.<br>
+            <strong>OR</strong> (2 JJ): Outputs pulse when either input arrives.<br>
+            <strong>XOR</strong> (4 JJ): Outputs pulse when exactly one input arrives.<br>
+            <strong>NOT</strong> (2 JJ): Inverts by subtracting from clock reference.<br>
+            <strong>DFF</strong> (2 JJ): D Flip-Flop for pipeline synchronization.`
         },
         {
             title: 'BER Prediction',
@@ -3580,7 +3580,7 @@ function renderUnderTheHood() {
             icon: '💡',
             body: `RQL achieves ultra-low power through three mechanisms:
             <br><br>
-            <strong>Zero static power:</strong> The AC resonant clock provides bias through mutual inductance — no DC bias resistors (unlike RSFQ's ~125 nW/JJ).<br>
+            <strong>Zero static power:</strong> The AC resonant clock provides bias through mutual inductance, with no DC bias resistors (unlike RSFQ's ~125 nW/JJ).<br>
             <strong>Switching energy:</strong> Each SFQ pulse carries Φ₀·Ic ≈ 0.5 aJ of energy.<br>
             <strong>Clock delivery:</strong> Resonant LC network with Q > 100, delivering energy only during transitions.<br><br>
             Total power = switching + clock overhead. For typical designs, RQL achieves 100-1000× lower power than RSFQ, approaching the Landauer limit of kT·ln(2).`
